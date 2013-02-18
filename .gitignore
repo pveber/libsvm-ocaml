@@ -1,0 +1,7 @@
+*.native
+*.byte
+/setup.log
+/setup.data
+/data
+/_log
+/_build

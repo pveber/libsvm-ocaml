@@ -1,0 +1,74 @@
+OASISFormat:       0.3
+Name:              libsvm-ocaml
+Version:           0.8
+Synopsis:          libsvm-ocaml - OCaml bindings to the LIBSVM library
+Description:       libsvm-ocaml offers an OCaml-interface to the LIBSVM library
+Authors:           Oliver Gu <odietric@gmail.com>
+                   Dominik Brugger <dominikbrugger@fastmail.fm>
+License:           LGPL-2.1+ with OCaml linking exception
+OCamlVersion:      >= 3.12
+FindlibVersion:    >= 1.3.1
+Homepage:          https://bitbucket.org/ogu/libsvm-ocaml
+
+Plugins:           META (0.3), StdFiles (0.3), DevFiles (0.3)
+XStdFilesREADME:   false
+BuildTools:        ocamldoc, ocamlbuild
+
+
+
+Library libsvm
+  Path:           lib
+  Findlibname:    libsvm
+  Modules:        Libsvm
+  CSources:       libsvm_stubs.c
+  CCOpt:          -g -O2 -fPIC -DPIC
+  CCLib:          -lsvm
+  BuildDepends:   core,lacaml
+
+# Examples
+
+Executable xor
+  Path:           examples
+  MainIs:         xor.ml
+  Install:        false
+  BuildDepends:   libsvm
+  CompiledObject: byte
+
+Executable svm_cli
+  Path:           examples
+  MainIs:         svm_cli.ml
+  Install:        false
+  BuildDepends:   libsvm,sexplib,sexplib.syntax
+  CompiledObject: byte
+
+# Executable log
+#   Path:           examples
+#   MainIs:         log.ml
+#   Install:        false
+#   BuildDepends:   libsvm,gsl,gnuplot
+#   CompiledObject: byte
+
+# Tests
+
+Executable svm_test
+  Path:           test
+  MainIs:         svm_test.ml
+  Install:        false
+  BuildDepends:   libsvm
+  CompiledObject: byte
+
+Test libsvm
+  Run$:             flag(tests)
+  Command:          env CAML_LD_LIBRARY_PATH=./_build/lib:`ocamlc -where`/../stublibs $svm_test
+  WorkingDirectory: .
+
+# Documentation
+
+Document API
+  Title:                API reference for LIBSVM-OCaml
+  Type:                 Ocamlbuild (0.3)
+  Install:              true
+  InstallDir:           $docdir/api
+  BuildTools:           ocamldoc
+  XOCamlbuildPath:      .
+  XOCamlbuildLibraries: libsvm
