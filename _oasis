@@ -59,8 +59,6 @@ Executable svm_test
 
 Test libsvm
   Run$:             flag(tests)
-  # Command:          env CAML_LD_LIBRARY_PATH=./_build/lib:`ocamlc
-  # -where`/../stublibs $svm_test
   Command:          $svm_test
   WorkingDirectory: .
 
