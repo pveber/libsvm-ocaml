@@ -11,9 +11,9 @@ The easiest way to install the LIBSVM development files is by using APT:
 
     $ apt-get install libsvm-dev
 
-If you want to build and install LIBSVM from source, download the package [here]
-(http://www.csie.ntu.edu.tw/~cjlin/libsvm/#download) and type in the package
-directory:
+If you want to build and install LIBSVM from source, download the package
+[here](http://www.csie.ntu.edu.tw/~cjlin/libsvm/#download) and type in the
+package directory:
 
     $ make lib
     $ mkdir /usr/include/libsvm
