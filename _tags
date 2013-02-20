@@ -2,9 +2,9 @@ true: debug,annot,thread
 <examples/svm_cli.ml{,i}>: syntax_camlp4o
 
 # OASIS_START
-# DO NOT EDIT (digest: c7487bde9da052de22383bad8e0143bc)
-# Ignore VCS directories, you can use the same kind of rule outside
-# OASIS_START/STOP if you want to exclude directories that contains
+# DO NOT EDIT (digest: 9b011639adf988aec7940bd79876ae3a)
+# Ignore VCS directories, you can use the same kind of rule outside 
+# OASIS_START/STOP if you want to exclude directories that contains 
 # useless stuff for the build process
 <**/.svn>: -traverse
 <**/.svn>: not_hygienic
@@ -16,40 +16,40 @@ true: debug,annot,thread
 ".git": not_hygienic
 "_darcs": -traverse
 "_darcs": not_hygienic
-# Library libsvm
-"lib/libsvm.cmxs": use_libsvm
-<lib/*.ml{,i}>: oasis_library_libsvm_ccopt
-"lib/libsvm_stubs.c": oasis_library_libsvm_ccopt
-<lib/libsvm.{cma,cmxa}>: oasis_library_libsvm_cclib
-"lib/liblibsvm_stubs.lib": oasis_library_libsvm_cclib
-"lib/dlllibsvm_stubs.dll": oasis_library_libsvm_cclib
-"lib/liblibsvm_stubs.a": oasis_library_libsvm_cclib
-"lib/dlllibsvm_stubs.so": oasis_library_libsvm_cclib
-<lib/libsvm.{cma,cmxa}>: use_liblibsvm_stubs
+# Library svm
+"lib/svm.cmxs": use_svm
+<lib/*.ml{,i}>: oasis_library_svm_ccopt
+"lib/libsvm_stubs.c": oasis_library_svm_ccopt
+<lib/svm.{cma,cmxa}>: oasis_library_svm_cclib
+"lib/libsvm_stubs.lib": oasis_library_svm_cclib
+"lib/dllsvm_stubs.dll": oasis_library_svm_cclib
+"lib/libsvm_stubs.a": oasis_library_svm_cclib
+"lib/dllsvm_stubs.so": oasis_library_svm_cclib
+<lib/svm.{cma,cmxa}>: use_libsvm_stubs
 <lib/*.ml{,i}>: pkg_core
 <lib/*.ml{,i}>: pkg_lacaml
 "lib/libsvm_stubs.c": pkg_core
 "lib/libsvm_stubs.c": pkg_lacaml
 # Executable xor
-"examples/xor.byte": use_libsvm
-"examples/xor.byte": pkg_core
-"examples/xor.byte": pkg_lacaml
+"examples/xor.native": use_svm
+"examples/xor.native": pkg_core
+"examples/xor.native": pkg_lacaml
 # Executable svm_cli
-"examples/svm_cli.byte": use_libsvm
-"examples/svm_cli.byte": pkg_sexplib
-"examples/svm_cli.byte": pkg_sexplib.syntax
-"examples/svm_cli.byte": pkg_core
-"examples/svm_cli.byte": pkg_lacaml
-<examples/*.ml{,i}>: use_libsvm
+"examples/svm_cli.native": use_svm
+"examples/svm_cli.native": pkg_sexplib
+"examples/svm_cli.native": pkg_sexplib.syntax
+"examples/svm_cli.native": pkg_core
+"examples/svm_cli.native": pkg_lacaml
+<examples/*.ml{,i}>: use_svm
 <examples/*.ml{,i}>: pkg_sexplib
 <examples/*.ml{,i}>: pkg_sexplib.syntax
 <examples/*.ml{,i}>: pkg_core
 <examples/*.ml{,i}>: pkg_lacaml
 # Executable svm_test
-"test/svm_test.byte": use_libsvm
-"test/svm_test.byte": pkg_core
-"test/svm_test.byte": pkg_lacaml
-<test/*.ml{,i}>: use_libsvm
+"test/svm_test.native": use_svm
+"test/svm_test.native": pkg_core
+"test/svm_test.native": pkg_lacaml
+<test/*.ml{,i}>: use_svm
 <test/*.ml{,i}>: pkg_core
 <test/*.ml{,i}>: pkg_lacaml
 # OASIS_STOP

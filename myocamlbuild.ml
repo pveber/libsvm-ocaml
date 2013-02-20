@@ -1,5 +1,5 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: 495d0c00aaf37421e19c2136e43151f2) *)
+(* DO NOT EDIT (digest: a8225caa7721fbf7ad603ce6f9619518) *)
 module OASISGettext = struct
 # 21 "/home/ogu/src/ocaml/oasis-0.3.0/src/oasis/OASISGettext.ml"
 
@@ -477,11 +477,11 @@ end
 open Ocamlbuild_plugin;;
 let package_default =
   {
-     MyOCamlbuildBase.lib_ocaml = [("libsvm", ["lib"])];
-     lib_c = [("libsvm", "lib", [])];
+     MyOCamlbuildBase.lib_ocaml = [("svm", ["lib"])];
+     lib_c = [("svm", "lib", [])];
      flags =
        [
-          (["oasis_library_libsvm_ccopt"; "compile"],
+          (["oasis_library_svm_ccopt"; "compile"],
             [
                (OASISExpr.EBool true,
                  S
@@ -496,9 +496,9 @@ let package_default =
                       A "-DPIC"
                    ])
             ]);
-          (["oasis_library_libsvm_cclib"; "link"],
+          (["oasis_library_svm_cclib"; "link"],
             [(OASISExpr.EBool true, S [A "-cclib"; A "-lsvm"])]);
-          (["oasis_library_libsvm_cclib"; "ocamlmklib"; "c"],
+          (["oasis_library_svm_cclib"; "ocamlmklib"; "c"],
             [(OASISExpr.EBool true, S [A "-lsvm"])])
        ];
      includes = [("test", ["lib"]); ("examples", ["lib"])];

@@ -1,12 +1,12 @@
 # OASIS_START
-# DO NOT EDIT (digest: 5f8ff6c05f4cccc243bf0b09b4f01326)
+# DO NOT EDIT (digest: e5cadc18e631c2fdf0b94d729cd263a7)
 version = "0.8"
 description = "libsvm-ocaml - OCaml bindings to the LIBSVM library"
 requires = "core lacaml"
-archive(byte) = "libsvm.cma"
-archive(byte, plugin) = "libsvm.cma"
-archive(native) = "libsvm.cmxa"
-archive(native, plugin) = "libsvm.cmxs"
-exists_if = "libsvm.cma"
+archive(byte) = "svm.cma"
+archive(byte, plugin) = "svm.cma"
+archive(native) = "svm.cmxa"
+archive(native, plugin) = "svm.cmxs"
+exists_if = "svm.cma"
 # OASIS_STOP
 

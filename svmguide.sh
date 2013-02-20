@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # This script downloads the Astroparticle dataset mentioned in the SVM guide
-# www.csie.ntu.edu.tw/~cjlin/papers/guide/guide.pdf and exectues the second
+# www.csie.ntu.edu.tw/~cjlin/papers/guide/guide.pdf and executes the second
 # command set on page 9 with the OCaml command line interface.
 
 DATA_URL="http://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/binary"
 DATA_DIR="./data"
-SVM_CLI="./svm_cli.byte"
+SVM_CLI="./svm_cli.native"
 
 if [ ! -e "$DATA_DIR" ]
 then

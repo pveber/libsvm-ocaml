@@ -1,3 +1,6 @@
+2013-02-20: Renamed library to svm to resolve linker problem.
+            Thanks to Markus Mottl <markus.mottl@gmail.com> for this suggestion.
+
 2013-02-18: Complete rewrite by Oliver Gu <odietric@gmail.com>.
 
 2005-09-26: Initial release (0.1) by
