@@ -1,3 +1,6 @@
+2013-02-22: Added a sparse representation of svm node arrays for problems
+            (training sets) without a precomputed kernel.
+
 2013-02-20: Renamed library to svm to resolve linker problem.
             Thanks to Markus Mottl <markus.mottl@gmail.com> for this suggestion.
 

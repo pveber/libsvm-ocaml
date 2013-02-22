@@ -113,6 +113,7 @@ module Svm = struct
     external svm_load_model : string -> model = "svm_load_model_stub"
 
     external svm_get_svm_type : model -> svm_type = "svm_get_svm_type_stub"
+    external svm_get_kernel_type : model -> kernel_type = "svm_get_kernel_type_stub"
     external svm_get_nr_class : model -> int = "svm_get_nr_class_stub"
     external svm_get_labels : model -> int list = "svm_get_labels_stub"
     external svm_get_svr_probability :
@@ -128,25 +129,39 @@ module Svm = struct
       model -> svm_node_array -> float * float array = "svm_predict_probability_stub"
   end
 
-  (* Note: This function does not create a sparse svm node, i.e. we also add
-     zero values to the node. The reason is that learning with precomputed
-     kernels requires a non-sparse node representation. *)
+  (* This functions skips all entries with zero
+     value and creates a sparse svm node array. *)
+  let sparse_svm_node_array_of_vec v =
+    let count_nonzeros v = Vec.fold (fun count x ->
+      count + if x <> 0. then 1 else 0) 0 v
+    in
+    let size = count_nonzeros v + 1 in
+    let nodes = Stub.svm_node_array_create size in
+    let pos = ref 0 in
+    Vec.iteri (fun index value ->
+      if value <> 0. then begin
+        Stub.svm_node_array_set nodes !pos index value;
+        incr pos
+      end) v;
+    Stub.svm_node_array_set nodes !pos (-1) 0.;
+    nodes
+
   let svm_node_array_of_vec v =
     let n = Vec.dim v in
-    let node = Stub.svm_node_array_create (n+1) in
+    let nodes = Stub.svm_node_array_create (n+1) in
     Vec.iteri (fun index value ->
       let pos = index-1 in
-      Stub.svm_node_array_set node pos pos value) v;
-    Stub.svm_node_array_set node n (-1) 0.;
-    node
+      Stub.svm_node_array_set nodes pos pos value) v;
+    Stub.svm_node_array_set nodes n (-1) 0.;
+    nodes
 
   let svm_node_array_of_list l ~len =
     let size = len + 1 in
-    let node = Stub.svm_node_array_create size in
+    let nodes = Stub.svm_node_array_create size in
     List.iteri l ~f:(fun pos (index, value) ->
-      Stub.svm_node_array_set node pos index value);
-    Stub.svm_node_array_set node len (-1) 0.;
-    node
+      Stub.svm_node_array_set nodes pos index value);
+    Stub.svm_node_array_set nodes len (-1) 0.;
+    nodes
 
   let count_lines file =
     In_channel.with_file file ~f:(fun ic ->
@@ -179,7 +194,7 @@ module Svm = struct
     let get_n_samples t = t.n_samples
     let get_n_feats t = t.n_feats
 
-    let create ~x ~y =
+    let create_gen x y ~f =
       let n_samples = Mat.dim1 x in
       let n_feats = Mat.dim2 x in
       let x' = Mat.transpose x in
@@ -187,7 +202,7 @@ module Svm = struct
       let v = Stub.double_array_create n_samples in
       for i = 1 to n_samples do
         let x_row = Mat.col x' i in
-        Stub.svm_node_matrix_set m (i-1) (svm_node_array_of_vec x_row);
+        Stub.svm_node_matrix_set m (i-1) (f x_row);
         Stub.double_array_set v (i-1) y.{i}
       done;
       let prob = Stub.svm_problem_create () in
@@ -198,6 +213,10 @@ module Svm = struct
         n_feats;
         prob;
       }
+
+    let create ~x ~y = create_gen x y ~f:sparse_svm_node_array_of_vec
+
+    let create_k ~k ~y = create_gen k y ~f:svm_node_array_of_vec
 
     let load file =
       let n_samples = count_lines file in
@@ -263,22 +282,22 @@ module Svm = struct
       let y = Stub.double_array_create n_samples in
       for i = 0 to n_samples-1 do
         let width = Stub.svm_problem_width t.prob i in
-        let node = Stub.svm_node_array_create (width+1) in
+        let nodes = Stub.svm_node_array_create (width+1) in
         for j = 0 to width-1 do
           let index, value = Stub.svm_problem_x_get t.prob i j in
           if Float.(=.) value min_feats.{index} then
-            Stub.svm_node_array_set node j index lower
+            Stub.svm_node_array_set nodes j index lower
           else if Float.(=.) value max_feats.{index} then
-            Stub.svm_node_array_set node j index upper
+            Stub.svm_node_array_set nodes j index upper
           else
             let new_value = lower +. (upper-.lower) *.
               (value-.min_feats.{index}) /.
               (max_feats.{index}-.min_feats.{index})
             in
-            Stub.svm_node_array_set node j index new_value
+            Stub.svm_node_array_set nodes j index new_value
         done;
-        Stub.svm_node_array_set node width (-1) 0.;
-        Stub.svm_node_matrix_set x i node;
+        Stub.svm_node_array_set nodes width (-1) 0.;
+        Stub.svm_node_matrix_set x i nodes;
         Stub.double_array_set y i (Stub.svm_problem_y_get t.prob i);
       done;
       let scaled_prob = Stub.svm_problem_create () in
@@ -408,7 +427,12 @@ module Svm = struct
     if not verbose then Stub.svm_set_quiet_mode () else ();
     Stub.svm_cross_validation problem.Problem.prob params n_folds
 
-  let predict_one model ~x = Stub.svm_predict model (svm_node_array_of_vec x)
+  let predict_one model ~x =
+    let nodes = match Stub.svm_get_kernel_type model with
+    | PRECOMPUTED -> svm_node_array_of_vec x
+    | _ -> sparse_svm_node_array_of_vec x
+    in
+    Stub.svm_predict model nodes
 
   let predict model ~x =
     let n = Mat.dim1 x in
@@ -420,7 +444,11 @@ module Svm = struct
     y
 
   let predict_values model ~x =
-    let dec_vals = Stub.svm_predict_values model (svm_node_array_of_vec x) in
+    let nodes = match Stub.svm_get_kernel_type model with
+      | PRECOMPUTED -> svm_node_array_of_vec x
+      | _ -> sparse_svm_node_array_of_vec x
+    in
+    let dec_vals = Stub.svm_predict_values model nodes in
     match Stub.svm_get_svm_type model with
     | EPSILON_SVR | NU_SVR | ONE_CLASS ->
       Array.make_matrix 1 1 dec_vals.(0)
@@ -445,7 +473,11 @@ module Svm = struct
       invalid_arg "One-class problems do not support probability estimates."
     | C_SVC | NU_SVC ->
       if Stub.svm_check_probability_model model then
-        Stub.svm_predict_probability model (svm_node_array_of_vec x)
+        let nodes = match Stub.svm_get_kernel_type model with
+        | PRECOMPUTED -> svm_node_array_of_vec x
+        | _ -> sparse_svm_node_array_of_vec x
+        in
+        Stub.svm_predict_probability model nodes
       else
         invalid_arg "Model does not support probability estimates."
 
@@ -461,8 +493,8 @@ module Svm = struct
         | Some line ->
           let target, feats = parse_line line ~pos:i in
           expected.{i} <- target;
-          let node = svm_node_array_of_list feats ~len:(List.length feats) in
-          predicted.{i} <- Stub.svm_predict model node;
+          let nodes = svm_node_array_of_list feats ~len:(List.length feats) in
+          predicted.{i} <- Stub.svm_predict model nodes;
           loop (i+1)
       in
       loop 1)

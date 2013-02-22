@@ -40,6 +40,21 @@ module Svm : sig
         instance. *)
     val create : x:mat -> y:vec -> t
 
+    (** [create_k k y] constructs a problem from a matrix [k] and target vector
+        [y]. The matrix [k] has to be of the following form:
+
+        1 K(x1,x1) K(x1,x2) ... K(x1,xL)
+
+        2 K(x2,x1) K(x2,x2) ... K(x2,xL)
+
+        ...
+
+        L K(xL,x1) K(xL,x2) ... K(xL,xL)
+
+        where L denotes the number of training instances and K(x,y) is the
+        precomputed kernel value of the two training instances x and y. *)
+    val create_k : k:mat -> y:vec -> t
+
     (** [get_n_samples prob] @return the number of training samples. *)
     val get_n_samples : t -> int
 

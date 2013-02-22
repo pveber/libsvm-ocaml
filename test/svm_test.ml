@@ -56,7 +56,7 @@ let () =
     [|1.; 0.; 0.; 0.; 0.|]; [|2.; 0.; 1.; 0.; 1.|];
     [|3.; 0.; 0.; 1.; 1.|]; [|4.; 0.; 1.; 1.; 2.|];
   |] in
-  let problem = Svm.Problem.create ~x:k ~y:targets in
+  let problem = Svm.Problem.create_k ~k ~y:targets in
   let model = Svm.train ~kernel:`PRECOMPUTED ~c:10.
     ~weights:[(1,10.);(0,1.)] problem
   in
