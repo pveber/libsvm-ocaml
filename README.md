@@ -26,7 +26,7 @@ To build and install libsvm-ocaml:
     $ make
     $ make install
 
-### Tests _(optionnal)_
+### Tests _(optional)_
 
 To build and execute tests:
 
