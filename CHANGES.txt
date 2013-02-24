@@ -1,3 +1,5 @@
+2013-02-24: Added n-fold cross validation mode to svm command line interface.
+
 2013-02-22: Svm node arrays for problems (training sets) without a precomputed
             kernel are sparsely represented and do not store attributes which
             have value zero.

@@ -119,35 +119,70 @@ let train_cmd =
         ~doc:" turn this on when shrinking heuristics should not be used"
       +> flag "-p" no_arg
         ~doc:" turn this on to train a svc or svr model with probability estimates"
+      +> flag "-v N" (optional int)
+        ~doc:" N-fold cross validation mode"
       +> flag "-q" no_arg
         ~doc:" quiet mode (no ouputs)"
       +> anon ("TRAINING-SET-FILE" %: file)
-      +> anon ("MODEL-FILE" %: file)
+      +> anon (maybe ("MODEL-FILE" %: file))
     )
     (fun svm_type kernel degree gamma coef0 c nu eps cachesize tol
-      turn_shrinking_off probability quiet training_set_file model_file () ->
+      turn_shrinking_off probability n_folds quiet training_set_file model_file () ->
         match Result.try_with (fun () -> Svm.Problem.load training_set_file) with
         | Error exn ->
           prerr_endline (Exn.to_string exn);
           exit 1
         | Ok problem ->
-          let model = Svm.train
-            ?svm_type
-            ?kernel
-            ?degree
-            ?gamma
-            ?coef0
-            ?c
-            ?nu
-            ?eps
-            ?cachesize
-            ?tol
-            ~shrinking:(if turn_shrinking_off then `off else `on)
-            ~probability
-            ~verbose:(not quiet)
-            problem
-          in
-          Svm.Model.save model model_file)
+          match n_folds with
+          | None ->
+            let model = Svm.train
+              ?svm_type
+              ?kernel
+              ?degree
+              ?gamma
+              ?coef0
+              ?c
+              ?nu
+              ?eps
+              ?cachesize
+              ?tol
+              ~shrinking:(if turn_shrinking_off then `off else `on)
+              ~probability
+              ~verbose:(not quiet)
+              problem
+            in
+            let model_file = Option.value model_file
+              ~default:(sprintf "%s.model" training_set_file)
+            in
+            Svm.Model.save model model_file
+          | Some n_folds ->
+            let predicted = Svm.cross_validation
+              ?svm_type
+              ?kernel
+              ?degree
+              ?gamma
+              ?coef0
+              ?c
+              ?nu
+              ?eps
+              ?cachesize
+              ?tol
+              ~shrinking:(if turn_shrinking_off then `off else `on)
+              ~probability
+              ~verbose:(not quiet)
+              ~n_folds
+              problem
+            in
+            let expected = Svm.Problem.get_targets problem in
+            match Option.value svm_type ~default:`C_SVC with
+            | `C_SVC | `NU_SVC | `ONE_CLASS ->
+              let accuracy = Stats.calc_accuracy ~expected ~predicted in
+              printf "Cross Validation Accuracy = %g%%\n" (100. *. accuracy)
+            | `EPSILON_SVR | `NU_SVR ->
+              let mse = Stats.calc_mse ~expected ~predicted in
+              let scc = Stats.calc_scc ~expected ~predicted in
+              printf "Cross Validation Mean squared error = %g\n" mse;
+              printf "Cross Validation Squared correlation coefficient = %g\n" scc)
 
 let predict_cmd =
   Command.basic ~summary:"svm prediction"
@@ -180,12 +215,12 @@ let predict_cmd =
         | `EPSILON_SVR | `NU_SVR ->
           let mse = Stats.calc_mse ~expected ~predicted in
           let scc = Stats.calc_scc ~expected ~predicted in
-          printf "Mean sqared error = %g (regression)\n" mse;
+          printf "Mean squared error = %g (regression)\n" mse;
           printf "Squared correlation coefficient = %g (regression)\n" scc)
 
 let () =
   Exn.handle_uncaught ~exit:true (fun () ->
-    Command.run ~version:"0.8" ~build_info:"N/A"
+    Command.run ~version:"0.8.3" ~build_info:"N/A"
       (Command.group ~summary:"Command line tools for Libsvm"
          [ "scale"  , scale_cmd
          ; "train"  , train_cmd
