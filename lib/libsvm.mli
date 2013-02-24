@@ -61,6 +61,9 @@ module Svm : sig
     (** [get_n_feats prob] @return the number of features (attributes). *)
     val get_n_feats : t -> int
 
+    (** [get_targets prob] @return the targets of training instances. *)
+    val get_targets : t -> vec
+
     (** [load filename] loads a problem from the file [filename].
         @raise Failure if an error occured during parsing of [filename]. *)
     val load : string -> t

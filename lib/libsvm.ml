@@ -246,6 +246,14 @@ module Svm = struct
         prob;
       }
 
+    let get_targets t =
+      let n = t.n_samples in
+      let y = Vec.create n in
+      for i = 1 to n do
+        y.{i} <- Stub.svm_problem_y_get t.prob (i-1)
+      done;
+      y
+
     let output t oc =
       let buf = Buffer.create 1024 in
       for i = 0 to t.n_samples-1 do
