@@ -2,6 +2,6 @@
 *.byte
 /setup.log
 /setup.data
-/data
+/svmguide/data
 /_log
 /_build

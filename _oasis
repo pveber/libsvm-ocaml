@@ -13,7 +13,7 @@ Homepage:          https://bitbucket.org/ogu/libsvm-ocaml
 Plugins:           META (0.3), StdFiles (0.3), DevFiles (0.3)
 XStdFilesREADME:   false
 BuildTools:        ocamldoc, ocamlbuild
-
+PostDistcleanCommand: $rmdir svmguide/data
 
 
 Library svm
