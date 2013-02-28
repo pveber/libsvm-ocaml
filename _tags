@@ -2,7 +2,7 @@ true: debug,annot,thread
 <examples/svm_cli.ml{,i}>: syntax_camlp4o
 
 # OASIS_START
-# DO NOT EDIT (digest: 9b011639adf988aec7940bd79876ae3a)
+# DO NOT EDIT (digest: 84680b9f13d00f7e7fb506f73f43a830)
 # Ignore VCS directories, you can use the same kind of rule outside 
 # OASIS_START/STOP if you want to exclude directories that contains 
 # useless stuff for the build process
@@ -40,9 +40,17 @@ true: debug,annot,thread
 "examples/svm_cli.native": pkg_sexplib.syntax
 "examples/svm_cli.native": pkg_core
 "examples/svm_cli.native": pkg_lacaml
-<examples/*.ml{,i}>: use_svm
 <examples/*.ml{,i}>: pkg_sexplib
 <examples/*.ml{,i}>: pkg_sexplib.syntax
+# Executable log
+"examples/log.native": use_svm
+"examples/log.native": pkg_gsl
+"examples/log.native": pkg_archimedes
+"examples/log.native": pkg_core
+"examples/log.native": pkg_lacaml
+<examples/*.ml{,i}>: use_svm
+<examples/*.ml{,i}>: pkg_gsl
+<examples/*.ml{,i}>: pkg_archimedes
 <examples/*.ml{,i}>: pkg_core
 <examples/*.ml{,i}>: pkg_lacaml
 # Executable svm_test

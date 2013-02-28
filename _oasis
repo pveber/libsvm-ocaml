@@ -41,12 +41,12 @@ Executable svm_cli
   BuildDepends:   libsvm,sexplib,sexplib.syntax
   CompiledObject: native
 
-# Executable log
-#   Path:           examples
-#   MainIs:         log.ml
-#   Install:        false
-#   BuildDepends:   libsvm,gsl,gnuplot
-#   CompiledObject: byte
+Executable log
+  Path:           examples
+  MainIs:         log.ml
+  Install:        false
+  BuildDepends:   libsvm,gsl,archimedes
+  CompiledObject: native
 
 # Tests
 
