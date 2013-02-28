@@ -1,19 +1,21 @@
 #!/bin/bash
 
+URL="http://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets"
 DATADIR="./data"
 SVMCLI="../svm_cli.native"
 
 download ()
 {
+  CATEGORY=$1
+  shift
   mkdir -p $DATADIR
   for file in $*; do
     if [ ! -f "$DATADIR/$file" ]; then
       printf "Downloading file '$file'..."
-      wget -q -P $DATADIR "$URL/$file"
-      if [ "$?" != "0" ]; then
-        printf " failed!\n"; exit 1
+      if wget -q -P $DATADIR "$URL/$CATEGORY/$file"; then
+        echo " done!"
       else
-        printf " finished!\n"
+        echo " failed!"; exit 1
       fi
     fi
   done

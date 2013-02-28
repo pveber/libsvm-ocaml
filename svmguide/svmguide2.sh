@@ -4,12 +4,12 @@
 # www.csie.ntu.edu.tw/~cjlin/papers/guide/guide.pdf and executes the second
 # command set on page 10 with the OCaml command line interface in quiet mode.
 
-URL="http://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/multiclass"
+CATEGORY=multiclass
 TRAINFILE="svmguide2"
 
 source 'common.sh'
 
-download $TRAINFILE && check_svm_cli
+download $CATEGORY $TRAINFILE && check_svm_cli
 
 TRAINFILE="$DATADIR/$TRAINFILE"
 

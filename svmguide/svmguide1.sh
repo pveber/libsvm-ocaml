@@ -4,13 +4,13 @@
 # www.csie.ntu.edu.tw/~cjlin/papers/guide/guide.pdf and executes the second
 # command set on page 9 with the OCaml command line interface in quiet mode.
 
-URL="http://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/binary"
+CATEGORY="binary"
 TRAINFILE="svmguide1"
 TESTFILE="svmguide1.t"
 
 source 'common.sh'
 
-download "$TRAINFILE" "$TESTFILE" && check_svm_cli
+download $CATEGORY $TRAINFILE $TESTFILE && check_svm_cli
 
 TRAINFILE="$DATADIR/$TRAINFILE"
 TESTFILE="$DATADIR/$TESTFILE"
