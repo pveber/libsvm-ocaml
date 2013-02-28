@@ -13,13 +13,13 @@ end
 
 let read_scale_parameters file =
   let conv_line line =
-    sscanf line "%d %g %g" (fun _index min max -> min, max)
+    Scanf.sscanf line "%d %g %g" (fun _index min max -> min, max)
   in
   In_channel.with_file file ~f:(fun ic ->
     match In_channel.input_line ic with
     | None -> failwith "no data"
     | Some line ->
-      let lower, upper = sscanf line "%g %g" Tuple2.create in
+      let lower, upper = Scanf.sscanf line "%g %g" Tuple2.create in
       let lines = In_channel.input_lines ic in
       let min_feats, max_feats =
         List.map lines ~f:conv_line
