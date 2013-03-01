@@ -543,11 +543,11 @@ module Stats = struct
     let sum_yy = ref 0. in
     let sum_xy = ref 0. in
     Array.iter2_exn array_x array_y ~f:(fun x y ->
-      sum_x  := !sum_x +. x;
-      sum_y  := !sum_y +. y;
-      sum_xx := x *. x;
-      sum_yy := y *. y;
-      sum_xy := x *. y;
+      sum_x  := !sum_x  +. x;
+      sum_y  := !sum_y  +. y;
+      sum_xx := !sum_xx +. x *. x;
+      sum_yy := !sum_yy +. y *. y;
+      sum_xy := !sum_xy +. x *. y;
     );
     let sqr x = x *. x in
     let l = float (Vec.dim expected) in
