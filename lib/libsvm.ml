@@ -535,22 +535,23 @@ module Stats = struct
 
   let calc_scc ~expected ~predicted =
     check_dimension expected predicted ~location:"calc_scc";
-    let array_x = Vec.to_array predicted in
-    let array_y = Vec.to_array expected in   (* true values *)
+    let l = Vec.dim expected in
+    let x = predicted in
+    let y = expected  in  (* true values *)
     let sum_x  = ref 0. in
     let sum_y  = ref 0. in
     let sum_xx = ref 0. in
     let sum_yy = ref 0. in
     let sum_xy = ref 0. in
-    Array.iter2_exn array_x array_y ~f:(fun x y ->
-      sum_x  := !sum_x  +. x;
-      sum_y  := !sum_y  +. y;
-      sum_xx := !sum_xx +. x *. x;
-      sum_yy := !sum_yy +. y *. y;
-      sum_xy := !sum_xy +. x *. y;
-    );
+    for i = 1 to l do
+      sum_x  := !sum_x  +. x.{i};
+      sum_y  := !sum_y  +. y.{i};
+      sum_xx := !sum_xx +. x.{i} *. x.{i};
+      sum_yy := !sum_yy +. y.{i} *. y.{i};
+      sum_xy := !sum_xy +. x.{i} *. y.{i};
+    done;
     let sqr x = x *. x in
-    let l = float (Vec.dim expected) in
+    let l = float l in
     Float.(sqr (l * !sum_xy - !sum_x * !sum_y) /
              ((l * !sum_xx - sqr !sum_x) * (l * !sum_yy - sqr !sum_y)))
 end
