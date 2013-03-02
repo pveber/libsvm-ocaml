@@ -241,21 +241,21 @@ module Stats : sig
       given test data set. For more details, have a look on page 8 in the
       {{:http://www.csie.ntu.edu.tw/~cjlin/papers/libsvm.pdf } LIBSVM paper} *)
 
-  (** [calc_n_correct expected actual] @return the number of correctly
+  (** [calc_n_correct expected predicted] @return the number of correctly
       predicted labels.
       @raise Invalid_argument if the vector dimensions do not match. *)
-  val calc_n_correct : expected:vec -> predicted:vec -> int
+  val calc_n_correct : vec -> vec -> int
 
   (** [calc_accuracy expected predicted] @return the ratio (in percent) of
       correctly predicted labels to the number of all labels.
       @raise Invalid_argument if the vector dimensions do not match. *)
-  val calc_accuracy : expected:vec -> predicted:vec -> float
+  val calc_accuracy : vec -> vec -> float
 
   (** [calc_mse expected predicted] @return the mean sum of squared errors.
       @raise Invalid_argument if the vector dimensions do not match. *)
-  val calc_mse : expected:vec -> predicted:vec -> float
+  val calc_mse : vec -> vec -> float
 
   (** [calc_scc expected predicted] @return the squared correlation coefficient.
       @raise Invalid_argument if the vector dimensions do not match. *)
-  val calc_scc : expected:vec -> predicted:vec -> float
+  val calc_scc : vec -> vec -> float
 end

@@ -176,11 +176,11 @@ let train_cmd =
             let expected = Svm.Problem.get_targets problem in
             match Option.value svm_type ~default:`C_SVC with
             | `C_SVC | `NU_SVC | `ONE_CLASS ->
-              let accuracy = Stats.calc_accuracy ~expected ~predicted in
+              let accuracy = Stats.calc_accuracy expected predicted in
               printf "Cross Validation Accuracy = %g%%\n" (100. *. accuracy)
             | `EPSILON_SVR | `NU_SVR ->
-              let mse = Stats.calc_mse ~expected ~predicted in
-              let scc = Stats.calc_scc ~expected ~predicted in
+              let mse = Stats.calc_mse expected predicted in
+              let scc = Stats.calc_scc expected predicted in
               printf "Cross Validation Mean squared error = %g\n" mse;
               printf "Cross Validation Squared correlation coefficient = %g\n" scc)
 
@@ -209,12 +209,12 @@ let predict_cmd =
           done);
         match Svm.Model.get_svm_type model with
         | `C_SVC | `NU_SVC | `ONE_CLASS ->
-          let n_correct = Stats.calc_n_correct ~expected ~predicted in
+          let n_correct = Stats.calc_n_correct expected predicted in
           let accuracy = Float.(of_int n_correct / of_int n_samples * 100.) in
           printf "Accuracy = %g%% (%d/%d) (classification)\n" accuracy n_correct n_samples
         | `EPSILON_SVR | `NU_SVR ->
-          let mse = Stats.calc_mse ~expected ~predicted in
-          let scc = Stats.calc_scc ~expected ~predicted in
+          let mse = Stats.calc_mse expected predicted in
+          let scc = Stats.calc_scc expected predicted in
           printf "Mean squared error = %g (regression)\n" mse;
           printf "Squared correlation coefficient = %g (regression)\n" scc)
 

@@ -517,27 +517,24 @@ module Stats = struct
       invalid_argf "dimension mismatch in Stats.%s: %d <> %d" location dimx dimy ()
     else ()
 
-  let calc_n_correct ~expected ~predicted =
-    check_dimension expected predicted ~location:"calc_n_correct";
-    Vec.fold (fun count x -> count + if x = 0. then 1 else 0) 0
-      (Vec.sub expected predicted)
+  let calc_n_correct x y =
+    check_dimension x y ~location:"calc_n_correct";
+    Vec.fold (fun count x -> count + if x = 0. then 1 else 0) 0 (Vec.sub x y)
 
-  let calc_accuracy ~expected ~predicted =
-    check_dimension expected predicted ~location:"calc_accuracy";
-    let l = Vec.dim expected in
-    let n_correct = calc_n_correct ~expected ~predicted in
-    Float.(of_int n_correct / of_int l)
+  let calc_accuracy x y =
+    check_dimension x y ~location:"calc_accuracy";
+    let l = Vec.dim x in
+    let n_correct = calc_n_correct x y in
+    float n_correct /. float l
 
-  let calc_mse ~expected ~predicted =
-    check_dimension expected predicted ~location:"calc_mse";
-    let l = Vec.dim expected in
-    Vec.ssqr_diff predicted expected /. float l
+  let calc_mse x y =
+    check_dimension x y ~location:"calc_mse";
+    let l = Vec.dim x in
+    Vec.ssqr_diff x y /. float l
 
-  let calc_scc ~expected ~predicted =
-    check_dimension expected predicted ~location:"calc_scc";
-    let l = Vec.dim expected in
-    let x = predicted in
-    let y = expected  in  (* true values *)
+  let calc_scc x y =
+    check_dimension x y ~location:"calc_scc";
+    let l = Vec.dim x in
     let sum_x  = ref 0. in
     let sum_y  = ref 0. in
     let sum_xx = ref 0. in
