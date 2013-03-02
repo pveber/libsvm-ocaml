@@ -1,47 +1,71 @@
 LIBSVM-OCaml - LIBSVM Bindings for OCaml
 ========================================
 
+---------------------------------------------------------------------------
+
 LIBSVM-OCaml is an [OCaml](http://www.ocaml.org) library with bindings to the
-[LIBSVM](http://www.csie.ntu.edu.tw/~cjlin/libsvm/) library.
+[LIBSVM](http://www.csie.ntu.edu.tw/~cjlin/libsvm/) library, which is a library
+for Support Vector Machines. Support Vector Machines are used to create
+supervised learning models for classification and regression problems in
+machine learning.
 
 Installation
 ------------
 
-The easiest way to install the LIBSVM development files is by using APT:
+From [OPAM](http://opam.ocamlpro.com)
 
-    $ apt-get install libsvm-dev
+    $ opam install libsvm-ocaml
 
-If you want to build and install LIBSVM from source, download the package
-[here](http://www.csie.ntu.edu.tw/~cjlin/libsvm/#download) and type in the
-package directory:
-
-    $ make lib
-    $ mkdir /usr/include/libsvm
-    $ cp svm.h /usr/include/libsvm
-    $ cp libsvm.so.2 /usr/lib
-    $ ln -s /usr/lib/libsvm.so.2 /usr/lib/libsvm.so
-
-To build and install libsvm-ocaml:
+From Source
 
     $ make
     $ make install
 
-### Tests _(optional)_
 
-To build and execute tests:
+Usage
+-----
 
-    $ ./configure --enable-tests
-    $ make test
+### Documentation
 
-### Documentation _(optional)_
+The API-documentation of this distribution can be built with `make doc`.
+It can also be found [here](http://ogu.bitbucket.org/libsvm-ocaml/api/).
 
-To build the documentation:
+### Examples
 
-    $ make doc
+This simple program solves the famous XOR-problem:
 
-It will then be installed by `make install`.
+    :::ocaml
+    open Lacaml.D
+    open Libsvm
+
+    let () =
+      let x = Mat.of_array
+        [|
+          [| 0.; 0. |];
+          [| 0.; 1. |];
+          [| 1.; 0. |];
+          [| 1.; 1. |];
+        |]
+      in
+      let targets = Vec.of_array [| 0.; 1.; 1.; 0. |] in
+      let problem = Svm.Problem.create ~x ~y:targets in
+      let model = Svm.train ~kernel:`RBF problem in
+      let y = Svm.predict model ~x in
+      for i = 1 to 4 do
+        Printf.printf "(%1.0f, %1.0f) -> %1.0f\n" x.{i,1} x.{i,2} y.{i}
+      done
+
+For more examples please refer to the `examples`- or `test`-directory of this
+distribution.
 
 Credits
 -------
 
-  * Dominik Brugger wrote the initial release for LIBSVM 2.8.
+  * Dominik Brugger wrote the initial release (0.1) of this library.
+
+Contact Information
+-------------------
+
+In case of bugs, feature requests and similar, please contact:
+
+  * Oliver Gu <gu.oliver@yahoo.com>
