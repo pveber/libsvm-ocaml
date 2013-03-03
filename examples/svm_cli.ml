@@ -220,7 +220,7 @@ let predict_cmd =
 
 let () =
   Exn.handle_uncaught ~exit:true (fun () ->
-    Command.run ~version:"0.8.4" ~build_info:"N/A"
+    Command.run ~version:"0.9" ~build_info:"N/A"
       (Command.group ~summary:"Command line tools for Libsvm"
          [ "scale"  , scale_cmd
          ; "train"  , train_cmd
