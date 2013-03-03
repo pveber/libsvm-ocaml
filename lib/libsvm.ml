@@ -391,7 +391,7 @@ module Svm = struct
       ?(svm_type=`C_SVC)
       ?(kernel=`RBF)
       ?(degree=3)
-      ?(gamma=0.)
+      ?gamma
       ?(coef0=0.)
       ?(c=1.)
       ?(nu=0.5)
@@ -404,7 +404,7 @@ module Svm = struct
       ?(verbose=false)
       problem =
     let params = create_params
-      ~gamma:(1. /. float problem.Problem.n_feats)
+      ~gamma:(Option.value gamma ~default:(1. /. float problem.Problem.n_feats))
       ~svm_type ~kernel ~degree ~coef0 ~c ~nu ~eps
       ~cachesize ~tol ~shrinking ~probability ~weights
     in
@@ -415,7 +415,7 @@ module Svm = struct
       ?(svm_type=`C_SVC)
       ?(kernel=`RBF)
       ?(degree=3)
-      ?(gamma=0.)
+      ?gamma
       ?(coef0=0.)
       ?(c=1.)
       ?(nu=0.5)
@@ -428,7 +428,7 @@ module Svm = struct
       ?(verbose=false)
       ~n_folds problem =
     let params = create_params
-      ~gamma:(1. /. float problem.Problem.n_feats)
+      ~gamma:(Option.value gamma ~default:(1. /. float problem.Problem.n_feats))
       ~svm_type ~kernel ~degree ~coef0 ~c ~nu ~eps
       ~cachesize ~tol ~shrinking ~probability ~weights
     in
