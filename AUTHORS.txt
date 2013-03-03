@@ -1,6 +1,6 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: bba1893e6cfa30be5193ca0fbeae3d5e) *)
+(* DO NOT EDIT (digest: d563d9a4d83bcc53e3fbd2e02e5ba741) *)
 Authors of libsvm-ocaml
-Oliver Gu <odietric@gmail.com>
+Oliver Gu <gu.oliver@yahoo.com>
 Dominik Brugger <dominikbrugger@fastmail.fm>
 (* OASIS_STOP *)

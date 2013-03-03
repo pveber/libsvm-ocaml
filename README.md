@@ -21,14 +21,13 @@ From Source
     $ make
     $ make install
 
-
 Usage
 -----
 
 ### Documentation
 
 The API-documentation of this distribution can be built with `make doc`.
-It can also be found [here](http://ogu.bitbucket.org/libsvm-ocaml/api/).
+It can also be found [online](http://ogu.bitbucket.org/libsvm-ocaml/api/).
 
 ### Examples
 

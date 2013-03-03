@@ -1,9 +1,9 @@
 OASISFormat:       0.3
 Name:              libsvm-ocaml
-Version:           0.8.3
+Version:           0.8.4
 Synopsis:          libsvm-ocaml - OCaml bindings to the LIBSVM library
 Description:       libsvm-ocaml offers an OCaml-interface to the LIBSVM library
-Authors:           Oliver Gu <odietric@gmail.com>
+Authors:           Oliver Gu <gu.oliver@yahoo.com>
                    Dominik Brugger <dominikbrugger@fastmail.fm>
 License:           LGPL-2.1+ with OCaml linking exception
 OCamlVersion:      >= 3.12
@@ -32,21 +32,21 @@ Executable xor
   MainIs:         xor.ml
   Install:        false
   BuildDepends:   libsvm
-  CompiledObject: native
+  CompiledObject: best
 
 Executable svm_cli
   Path:           examples
   MainIs:         svm_cli.ml
   Install:        false
   BuildDepends:   libsvm,sexplib,sexplib.syntax
-  CompiledObject: native
+  CompiledObject: best
 
 Executable log
   Path:           examples
   MainIs:         log.ml
   Install:        false
   BuildDepends:   libsvm,gsl,archimedes
-  CompiledObject: native
+  CompiledObject: best
 
 # Tests
 
@@ -55,7 +55,7 @@ Executable svm_test
   MainIs:         svm_test.ml
   Install:        false
   BuildDepends:   libsvm
-  CompiledObject: native
+  CompiledObject: best
 
 Test libsvm
   Run$:             flag(tests)

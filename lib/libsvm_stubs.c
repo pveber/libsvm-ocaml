@@ -2,7 +2,7 @@
    LIBSVM-OCaml - OCaml-bindings to the LIBSVM library
 
    Copyright (C) 2013-  Oliver Gu
-   email: odietric@gmail.com
+   email: gu.oliver@yahoo.com
 
    Copyright (C) 2005  Dominik Brugger
    email: dominikbrugger@fastmail.fm
