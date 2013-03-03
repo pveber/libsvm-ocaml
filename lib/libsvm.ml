@@ -66,7 +66,6 @@ module Svm = struct
 
   module Stub = struct
     type double_array
-    type svm_node
     type svm_node_array
     type svm_node_matrix
 
@@ -74,8 +73,6 @@ module Svm = struct
       int -> double_array = "double_array_create_stub"
     external double_array_set :
       double_array -> int -> float -> unit = "double_array_set_stub"
-    external double_array_get :
-      double_array -> int -> float = "double_array_get_stub"
     external svm_node_array_create :
       int -> svm_node_array = "svm_node_array_create_stub"
     external svm_node_array_set :
@@ -88,8 +85,6 @@ module Svm = struct
       unit -> problem = "svm_problem_create_stub"
     external svm_problem_l_set :
       problem -> int -> unit = "svm_problem_l_set_stub"
-    external svm_problem_l_get :
-      problem -> int = "svm_problem_l_get_stub"
     external svm_problem_y_set :
       problem -> double_array -> unit = "svm_problem_y_set_stub"
     external svm_problem_y_get :
@@ -459,10 +454,10 @@ module Svm = struct
     let dec_vals = Stub.svm_predict_values model nodes in
     match Stub.svm_get_svm_type model with
     | EPSILON_SVR | NU_SVR | ONE_CLASS ->
-      Array.make_matrix 1 1 dec_vals.(0)
+      Array.make_matrix ~dimx:1 ~dimy:1 dec_vals.(0)
     | C_SVC | NU_SVC ->
       let n_classes = Stub.svm_get_nr_class model in
-      let dec_mat = Array.make_matrix n_classes n_classes 0. in
+      let dec_mat = Array.make_matrix ~dimx:n_classes ~dimy:n_classes 0. in
       let count = ref 0 in
       for i = 0 to n_classes-1 do
         for j = i+1 to n_classes-1 do

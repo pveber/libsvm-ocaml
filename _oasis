@@ -23,7 +23,7 @@ Library svm
   CSources:       libsvm_stubs.c
   CCOpt:          -g -O2 -fPIC -DPIC
   CCLib:          -lsvm
-  BuildDepends:   core,lacaml
+  BuildDepends:   threads,core,lacaml
 
 # Examples
 
