@@ -1,5 +1,5 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: d9a04327e5daf42539236081ca25409d) *)
+(* DO NOT EDIT (digest: 0da94f6a806e2169c92934136b9aa7e7) *)
 This is the INSTALL file for the libsvm-ocaml distribution.
 
 This package uses OASIS to generate its build system. See section OASIS for
@@ -14,8 +14,6 @@ In order to compile this package, you will need:
 * core for library svm
 * lacaml for library svm
 * sexplib for executable svm_cli
-* gsl for executable log
-* archimedes for executable log
 
 Installing
 ==========

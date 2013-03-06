@@ -4,7 +4,12 @@ open Libsvm
 module A = Archimedes
 
 (* This program uses Support Vector Regression to approximate
-   the log function (green) from its noisy observations (red). *)
+   the log function (green) from its noisy observations (red).
+
+   To compile it, please install the additional packages:
+   1. archimedes: opam install archimedes
+   2. gsl: opam install gsl-ocaml
+*)
 
 let a = 0.1
 let b = 6.0
