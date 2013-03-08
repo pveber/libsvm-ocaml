@@ -1,6 +1,6 @@
 # OASIS_START
-# DO NOT EDIT (digest: e659fdd8dd5262e4a8f3ed050cc260aa)
-version = "0.9"
+# DO NOT EDIT (digest: 729120d591d16c7d1add562f839d93c4)
+version = "0.9.1"
 description = "libsvm-ocaml - OCaml bindings to the LIBSVM library"
 requires = "threads core lacaml"
 archive(byte) = "svm.cma"
