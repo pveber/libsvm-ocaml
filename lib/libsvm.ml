@@ -125,7 +125,7 @@ module Svm = struct
       model -> svm_node_array -> float * float array = "svm_predict_probability_stub"
   end
 
-  (* This functions skips all entries with zero
+  (* This function skips all entries with zero
      value and creates a sparse svm node array. *)
   let sparse_svm_node_array_of_vec v =
     let count_nonzeros v = Vec.fold (fun count x ->
