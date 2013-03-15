@@ -109,6 +109,11 @@ module Svm : sig
         @raise Invalid_argument in the case of a regression or one-class model. *)
     val get_labels : t -> int list
 
+    (** [get_n_sv model] @return the total number of support vectors. *)
+    val get_n_sv : t -> int
+
+    (* val get_sv_indices : t ->  *)
+
     (** [get_svr_probability model] @return a positive value for a regression
         model with probability information. In the case of no probability
         information, 0 is returned.

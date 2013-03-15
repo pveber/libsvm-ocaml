@@ -498,6 +498,12 @@ CAMLprim value svm_get_labels_stub(value v_model)
   CAMLreturn(v_labels);
 }
 
+CAMLprim value svm_get_nr_sv_stub(value v_model)
+{
+  CAMLparam1(v_model);
+  CAMLreturn(Val_long(Svm_model_val(v_model)->l));
+}
+
 CAMLprim value svm_get_svr_probability_stub(value v_model)
 {
   CAMLparam1(v_model);

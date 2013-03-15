@@ -111,6 +111,7 @@ module Svm = struct
     external svm_get_kernel_type : model -> kernel_type = "svm_get_kernel_type_stub"
     external svm_get_nr_class : model -> int = "svm_get_nr_class_stub"
     external svm_get_labels : model -> int list = "svm_get_labels_stub"
+    external svm_get_nr_sv : model -> int = "svm_get_nr_sv_stub"
     external svm_get_svr_probability :
       model -> float = "svm_get_svr_probability_stub"
     external svm_check_probability_model :
@@ -333,6 +334,8 @@ module Svm = struct
       | NU_SVR | EPSILON_SVR | ONE_CLASS ->
         invalid_arg "Cannot return labels for a regression or one-class model."
       | _ -> Stub.svm_get_labels t
+
+    let get_n_sv t = Stub.svm_get_nr_sv t
 
     let get_svr_probability t =
       match Stub.svm_get_svm_type t with
