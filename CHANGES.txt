@@ -1,6 +1,8 @@
-2012-03-06: Removed gsl and archimedes dependencies.
+2013-03-15: Added accessor function for total number of support vectors.
 
-2012-03-03: Fixed bug of unused gamma parameter in Svm.train and
+2013-03-06: Removed gsl and archimedes dependencies.
+
+2013-03-03: Fixed bug of unused gamma parameter in Svm.train and
             Svm.cross_validation functions.
 
 2013-03-02: Removed argument labels from functions in Stats module.
