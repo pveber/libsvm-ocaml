@@ -9,6 +9,7 @@ Description:       LIBSVM-OCaml is an OCaml library with bindings to the LIBSVM
                    in machine learning.
 Authors:           Oliver Gu <gu.oliver@yahoo.com>,
                    Dominik Brugger <dominikbrugger@fastmail.fm>
+Maintainers:       Oliver Gu <gu.oliver@yahoo.com>
 License:           LGPL-2.1+ with OCaml linking exception
 OCamlVersion:      >= 3.12
 FindlibVersion:    >= 1.3.1
