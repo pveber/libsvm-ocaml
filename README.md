@@ -14,7 +14,7 @@ Installation
 
 From [OPAM](http://opam.ocamlpro.com)
 
-    $ opam install libsvm-ocaml
+    $ opam install libsvm
 
 From Source
 
