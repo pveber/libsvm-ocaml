@@ -12,7 +12,7 @@ machine learning.
 Installation
 ------------
 
-From [OPAM](http://opam.ocamlpro.com)
+From [OPAM](http://opam.ocaml.org)
 
     $ opam install libsvm
 
