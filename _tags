@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 2dc1adfec1deed74d8b0f78ce09b75bb)
+# DO NOT EDIT (digest: 7a40513e80995f94bf178d11adcb23b1)
 # Ignore VCS directories, you can use the same kind of rule outside 
 # OASIS_START/STOP if you want to exclude directories that contains 
 # useless stuff for the build process
@@ -41,9 +41,20 @@
 <examples/svm_cli.{native,byte}>: pkg_threads
 <examples/svm_cli.{native,byte}>: pkg_core
 <examples/svm_cli.{native,byte}>: pkg_lacaml
+# Executable log
+<examples/log.{native,byte}>: use_svm
+<examples/log.{native,byte}>: pkg_sexplib
+<examples/log.{native,byte}>: pkg_sexplib.syntax
+<examples/log.{native,byte}>: pkg_archimedes
+<examples/log.{native,byte}>: pkg_gsl
+<examples/log.{native,byte}>: pkg_threads
+<examples/log.{native,byte}>: pkg_core
+<examples/log.{native,byte}>: pkg_lacaml
 <examples/*.ml{,i}>: use_svm
 <examples/*.ml{,i}>: pkg_sexplib
 <examples/*.ml{,i}>: pkg_sexplib.syntax
+<examples/*.ml{,i}>: pkg_archimedes
+<examples/*.ml{,i}>: pkg_gsl
 <examples/*.ml{,i}>: pkg_threads
 <examples/*.ml{,i}>: pkg_core
 <examples/*.ml{,i}>: pkg_lacaml

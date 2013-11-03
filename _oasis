@@ -20,6 +20,11 @@ XStdFilesREADME:   false
 BuildTools:        ocamldoc, ocamlbuild
 PostDistcleanCommand: $rmdir svmguide/data
 
+# Flags
+
+Flag examples
+  Description:    Build all examples
+  Default:        false
 
 Library svm
   Path:           lib
@@ -35,6 +40,7 @@ Library svm
 # Examples
 
 Executable xor
+  Build$:         flag(examples)
   Path:           examples
   MainIs:         xor.ml
   Install:        false
@@ -42,10 +48,19 @@ Executable xor
   CompiledObject: best
 
 Executable svm_cli
+  Build$:         flag(examples)
   Path:           examples
   MainIs:         svm_cli.ml
   Install:        false
   BuildDepends:   libsvm,sexplib,sexplib.syntax
+  CompiledObject: best
+
+Executable log
+  Build$:         flag(examples)
+  Path:           examples
+  MainIs:         log.ml
+  Install:        false
+  BuildDepends:   libsvm,sexplib,sexplib.syntax,archimedes,gsl
   CompiledObject: best
 
 # Tests

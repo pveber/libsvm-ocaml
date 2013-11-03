@@ -8,7 +8,7 @@ module A = Archimedes
 
    To compile it, please install the additional packages:
    1. archimedes: opam install archimedes
-   2. gsl: opam install gsl-ocaml
+   2. gsl: opam install gsl
 *)
 
 let a = 0.1
