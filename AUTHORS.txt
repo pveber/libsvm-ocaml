@@ -1,9 +1,13 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: 2731f10a0b9d9c01905c7ebcac7d2423) *)
-Authors of libsvm
-Oliver Gu <gu.oliver@yahoo.com>
-Dominik Brugger <dominikbrugger@fastmail.fm>
+(* DO NOT EDIT (digest: 46931382cc177d11311a6f7f1631087d) *)
 
-Current maintainers of libsvm
-Oliver Gu <gu.oliver@yahoo.com>
+Authors of libsvm:
+
+* Oliver Gu <gu.oliver@yahoo.com>
+* Dominik Brugger <dominikbrugger@fastmail.fm>
+
+Current maintainers of libsvm:
+
+* Oliver Gu <gu.oliver@yahoo.com>
+
 (* OASIS_STOP *)
