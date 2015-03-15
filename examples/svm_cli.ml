@@ -23,8 +23,8 @@ let read_scale_parameters file =
       let lines = In_channel.input_lines ic in
       let min_feats, max_feats =
         List.map lines ~f:conv_line
-        |! Array.of_list
-        |! Array.split
+        |> Array.of_list
+        |> Array.split
       in
       { Scale_parameters.
         lower;

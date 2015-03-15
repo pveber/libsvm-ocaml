@@ -165,7 +165,7 @@ module Svm = struct
 
   let parse_line file = stage (fun line ~pos ->
     let result = Result.try_with (fun () ->
-      match String.rstrip line |! String.split ~on:' ' with
+      match String.rstrip line |> String.split ~on:' ' with
       | [] -> assert false
       | x :: xs ->
         let target = Float.of_string x in
