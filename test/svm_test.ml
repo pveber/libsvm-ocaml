@@ -1,4 +1,4 @@
-open Core.Std
+open Core_kernel.Std
 open Lacaml.D
 open Format
 open Lacaml.Io
