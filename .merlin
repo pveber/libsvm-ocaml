@@ -1,0 +1,11 @@
+S lib
+S test
+S examples
+
+PKG archimedes
+PKG core
+PKG gsl
+PKG lacaml
+PKG ppx_sexp_conv
+
+B _build/**
