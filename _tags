@@ -59,3 +59,4 @@ true: annot, bin_annot
 <test/*.ml{,i,y}>: use_svm
 # OASIS_STOP
 <**/*.ml{,i}>: annot, warn_A, warn_e, warn_r
+<**/*.ml{,i}>: warn(-44)
