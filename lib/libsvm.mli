@@ -25,7 +25,6 @@
 
 (** Interface to Libsvm *)
 
-open Core_kernel.Std
 open Lacaml.D
 
 module Svm : sig
