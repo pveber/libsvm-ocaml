@@ -80,13 +80,13 @@ let scale_cmd =
         Svm.Problem.output scaled_problem Out_channel.stdout)
 
 module Svm_type = struct
-  type t = [ `C_SVC | `NU_SVC | `ONE_CLASS | `EPSILON_SVR | `NU_SVR ] with sexp
+  type t = [ `C_SVC | `NU_SVC | `ONE_CLASS | `EPSILON_SVR | `NU_SVR ] [@@deriving sexp]
   let of_string x = t_of_sexp (Sexp.Atom (String.uppercase x))
   let arg_type = Command.Spec.Arg_type.create of_string
 end
 
 module Kernel_type = struct
-  type t = [ `LINEAR | `POLY | `RBF | `SIGMOID | `PRECOMPUTED ] with sexp
+  type t = [ `LINEAR | `POLY | `RBF | `SIGMOID | `PRECOMPUTED ] [@@deriving sexp]
   let of_string x = t_of_sexp (Sexp.Atom (String.uppercase x))
   let arg_type = Command.Spec.Arg_type.create of_string
 end

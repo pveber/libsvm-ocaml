@@ -1,5 +1,5 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: d72b5f6013810e8b092f6936379464fc) *)
+(* DO NOT EDIT (digest: 6256f42a6c75d3f72f8a4b297486b3b2) *)
 
 This is the INSTALL file for the libsvm distribution.
 
@@ -16,9 +16,7 @@ In order to compile this package, you will need:
 * core_kernel (>= 108.08.00) for library svm
 * lacaml for library svm
 * core for executable svm_cli
-* sexplib for executable svm_cli
-* archimedes for executable log
-* gsl for executable log
+* ppx_sexp_conv for executable svm_cli
 
 Installing
 ==========
