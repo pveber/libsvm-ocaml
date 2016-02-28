@@ -193,7 +193,7 @@ module Svm = struct
     let create_gen x y ~f =
       let n_samples = Mat.dim1 x in
       let n_feats = Mat.dim2 x in
-      let x' = Mat.transpose x in
+      let x' = Mat.transpose_copy x in
       let m = Stub.svm_node_matrix_create n_samples in
       let v = Stub.double_array_create n_samples in
       for i = 1 to n_samples do
@@ -443,7 +443,7 @@ module Svm = struct
   let predict model ~x =
     let n = Mat.dim1 x in
     let y = Vec.create n in
-    let x' = Mat.transpose x in
+    let x' = Mat.transpose_copy x in
     for i = 1 to n do
       y.{i} <- predict_one model ~x:(Mat.col x' i)
     done;

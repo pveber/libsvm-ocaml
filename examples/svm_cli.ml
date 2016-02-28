@@ -22,9 +22,7 @@ let read_scale_parameters file =
       let lower, upper = Scanf.sscanf line "%g %g" Tuple2.create in
       let lines = In_channel.input_lines ic in
       let min_feats, max_feats =
-        List.map lines ~f:conv_line
-        |> Array.of_list
-        |> Array.split
+        List.map lines ~f:conv_line |> Array.of_list |> Array.unzip
       in
       { Scale_parameters.
         lower;

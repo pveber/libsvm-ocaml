@@ -11,7 +11,7 @@ let () =
   let samples = Mat.of_array [|
     [|0.;0.|]; [|0.; 1.|]; [|1.;0.|]; [|1.; 1.|]
   |] in
-  let inputs = Mat.transpose samples in
+  let inputs = Mat.transpose_copy samples in
   let problem = Svm.Problem.create ~x:samples ~y:targets in
   let n_samples = Svm.Problem.get_n_samples problem in
   let kernels = [ `LINEAR; `POLY; `RBF ] in

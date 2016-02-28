@@ -34,8 +34,8 @@ Library svm
   CCOpt:          -g -O2 -fPIC -DPIC
   CCLib:          -lsvm
   BuildDepends:   threads,
-                  core_kernel (>= 108.08.00),
-                  lacaml
+                  core_kernel (>= 113.24.00),
+                  lacaml      (>= 8.0.6)
 
 # Examples
 
