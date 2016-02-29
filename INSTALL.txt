@@ -1,5 +1,5 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: 514cf88005fe7c4b964a0525e16bc604) *)
+(* DO NOT EDIT (digest: a6ddba918d1e6500f67bb94a7341179e) *)
 
 This is the INSTALL file for the libsvm distribution.
 
@@ -11,7 +11,7 @@ Dependencies
 
 In order to compile this package, you will need:
 
-* ocaml (>= 3.12) for all, test libsvm, doc API
+* ocaml (>= 4.02.1) for all, test libsvm, doc API
 * findlib (>= 1.3.1)
 * core_kernel (>= 113.24.00) for library svm
 * lacaml (>= 8.0.6) for library svm

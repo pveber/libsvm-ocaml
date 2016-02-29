@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 6ccb9dd0264c2f0161867bb343b89199)
+# DO NOT EDIT (digest: 44063a417d772be1f3fde95c1ce3954c)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -24,47 +24,47 @@ true: annot, bin_annot
 "lib/libsvm_stubs.a": oasis_library_svm_cclib
 "lib/dllsvm_stubs.so": oasis_library_svm_cclib
 <lib/svm.{cma,cmxa}>: use_libsvm_stubs
-<lib/*.ml{,i,y}>: pkg_core_kernel
-<lib/*.ml{,i,y}>: pkg_lacaml
-<lib/*.ml{,i,y}>: pkg_threads
-"lib/libsvm_stubs.c": pkg_core_kernel
-"lib/libsvm_stubs.c": pkg_lacaml
-"lib/libsvm_stubs.c": pkg_threads
+<lib/*.ml{,i,y}>: package(core_kernel)
+<lib/*.ml{,i,y}>: package(lacaml)
+<lib/*.ml{,i,y}>: package(threads)
+"lib/libsvm_stubs.c": package(core_kernel)
+"lib/libsvm_stubs.c": package(lacaml)
+"lib/libsvm_stubs.c": package(threads)
 # Executable xor
-<examples/xor.{native,byte}>: pkg_core_kernel
-<examples/xor.{native,byte}>: pkg_lacaml
-<examples/xor.{native,byte}>: pkg_threads
+<examples/xor.{native,byte}>: package(core_kernel)
+<examples/xor.{native,byte}>: package(lacaml)
+<examples/xor.{native,byte}>: package(threads)
 <examples/xor.{native,byte}>: use_svm
 # Executable svm_cli
-<examples/svm_cli.{native,byte}>: pkg_core
-<examples/svm_cli.{native,byte}>: pkg_core_kernel
-<examples/svm_cli.{native,byte}>: pkg_lacaml
-<examples/svm_cli.{native,byte}>: pkg_ppx_sexp_conv
-<examples/svm_cli.{native,byte}>: pkg_threads
+<examples/svm_cli.{native,byte}>: package(core)
+<examples/svm_cli.{native,byte}>: package(core_kernel)
+<examples/svm_cli.{native,byte}>: package(lacaml)
+<examples/svm_cli.{native,byte}>: package(ppx_sexp_conv)
+<examples/svm_cli.{native,byte}>: package(threads)
 <examples/svm_cli.{native,byte}>: use_svm
-<examples/*.ml{,i,y}>: pkg_core
-<examples/*.ml{,i,y}>: pkg_ppx_sexp_conv
+<examples/*.ml{,i,y}>: package(core)
+<examples/*.ml{,i,y}>: package(ppx_sexp_conv)
 # Executable log
-<examples/log.{native,byte}>: pkg_archimedes
-<examples/log.{native,byte}>: pkg_core_kernel
-<examples/log.{native,byte}>: pkg_gsl
-<examples/log.{native,byte}>: pkg_lacaml
-<examples/log.{native,byte}>: pkg_threads
+<examples/log.{native,byte}>: package(archimedes)
+<examples/log.{native,byte}>: package(core_kernel)
+<examples/log.{native,byte}>: package(gsl)
+<examples/log.{native,byte}>: package(lacaml)
+<examples/log.{native,byte}>: package(threads)
 <examples/log.{native,byte}>: use_svm
-<examples/*.ml{,i,y}>: pkg_archimedes
-<examples/*.ml{,i,y}>: pkg_core_kernel
-<examples/*.ml{,i,y}>: pkg_gsl
-<examples/*.ml{,i,y}>: pkg_lacaml
-<examples/*.ml{,i,y}>: pkg_threads
+<examples/*.ml{,i,y}>: package(archimedes)
+<examples/*.ml{,i,y}>: package(core_kernel)
+<examples/*.ml{,i,y}>: package(gsl)
+<examples/*.ml{,i,y}>: package(lacaml)
+<examples/*.ml{,i,y}>: package(threads)
 <examples/*.ml{,i,y}>: use_svm
 # Executable svm_test
-<test/svm_test.{native,byte}>: pkg_core_kernel
-<test/svm_test.{native,byte}>: pkg_lacaml
-<test/svm_test.{native,byte}>: pkg_threads
+<test/svm_test.{native,byte}>: package(core_kernel)
+<test/svm_test.{native,byte}>: package(lacaml)
+<test/svm_test.{native,byte}>: package(threads)
 <test/svm_test.{native,byte}>: use_svm
-<test/*.ml{,i,y}>: pkg_core_kernel
-<test/*.ml{,i,y}>: pkg_lacaml
-<test/*.ml{,i,y}>: pkg_threads
+<test/*.ml{,i,y}>: package(core_kernel)
+<test/*.ml{,i,y}>: package(lacaml)
+<test/*.ml{,i,y}>: package(threads)
 <test/*.ml{,i,y}>: use_svm
 # OASIS_STOP
 <**/*.ml{,i}>: annot, warn_A, warn_e, warn_r
