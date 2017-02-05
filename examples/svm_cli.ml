@@ -44,38 +44,38 @@ let scale_cmd =
       +> anon ("DATA-FILE" %: file)
     )
     (fun lower upper save_file restore_file data_file () ->
-      match Result.try_with (fun () -> Svm.Problem.load data_file) with
-      | Error exn ->
-        prerr_endline (Exn.to_string exn);
-        exit 1
-      | Ok problem ->
-        let params = match restore_file with
-          | None ->
-            let (`Min min, `Max max) = Svm.Problem.min_max_feats problem in
-            { Scale_parameters.
-              lower = Option.value lower ~default:(-.1.);
-              upper = Option.value upper ~default:(1.);
-              min_feats = min;
-              max_feats = max;
-            }
-          | Some file -> read_scale_parameters file
-        in
-        let lower = params.Scale_parameters.lower in
-        let upper = params.Scale_parameters.upper in
-        let min_feats = params.Scale_parameters.min_feats in
-        let max_feats = params.Scale_parameters.max_feats in
-        Option.iter save_file ~f:(fun file ->
-          Out_channel.with_file file ~f:(fun oc ->
-            let n_feats = Svm.Problem.get_n_feats problem in
-            Out_channel.output_string oc (sprintf "%G %G\n" lower upper);
-            for i = 1 to n_feats do
-              let line = sprintf "%d %g %g\n" i min_feats.{i} max_feats.{i} in
-              Out_channel.output_string oc line
-            done));
-        let scaled_problem =
-          Svm.Problem.scale problem ~lower ~upper ~min_feats ~max_feats
-        in
-        Svm.Problem.output scaled_problem Out_channel.stdout)
+       match Result.try_with (fun () -> Svm.Problem.load data_file) with
+       | Error exn ->
+         prerr_endline (Exn.to_string exn);
+         exit 1
+       | Ok problem ->
+         let params = match restore_file with
+           | None ->
+             let (`Min min, `Max max) = Svm.Problem.min_max_feats problem in
+             { Scale_parameters.
+               lower = Option.value lower ~default:(-.1.);
+               upper = Option.value upper ~default:(1.);
+               min_feats = min;
+               max_feats = max;
+             }
+           | Some file -> read_scale_parameters file
+         in
+         let lower = params.Scale_parameters.lower in
+         let upper = params.Scale_parameters.upper in
+         let min_feats = params.Scale_parameters.min_feats in
+         let max_feats = params.Scale_parameters.max_feats in
+         Option.iter save_file ~f:(fun file ->
+           Out_channel.with_file file ~f:(fun oc ->
+             let n_feats = Svm.Problem.get_n_feats problem in
+             Out_channel.output_string oc (sprintf "%G %G\n" lower upper);
+             for i = 1 to n_feats do
+               let line = sprintf "%d %g %g\n" i min_feats.{i} max_feats.{i} in
+               Out_channel.output_string oc line
+             done));
+         let scaled_problem =
+           Svm.Problem.scale problem ~lower ~upper ~min_feats ~max_feats
+         in
+         Svm.Problem.output scaled_problem Out_channel.stdout)
 
 module Svm_type = struct
   type t = [ `C_SVC | `NU_SVC | `ONE_CLASS | `EPSILON_SVR | `NU_SVR ] [@@deriving sexp]
@@ -126,14 +126,14 @@ let train_cmd =
     )
     (fun svm_type kernel degree gamma coef0 c nu eps cachesize tol
       turn_shrinking_off probability n_folds quiet training_set_file model_file () ->
-        match Result.try_with (fun () -> Svm.Problem.load training_set_file) with
-        | Error exn ->
-          prerr_endline (Exn.to_string exn);
-          exit 1
-        | Ok problem ->
-          match n_folds with
-          | None ->
-            let model = Svm.train
+      match Result.try_with (fun () -> Svm.Problem.load training_set_file) with
+      | Error exn ->
+        prerr_endline (Exn.to_string exn);
+        exit 1
+      | Ok problem ->
+        match n_folds with
+        | None ->
+          let model = Svm.train
               ?svm_type
               ?kernel
               ?degree
@@ -148,13 +148,13 @@ let train_cmd =
               ~probability
               ~verbose:(not quiet)
               problem
-            in
-            let model_file = Option.value model_file
+          in
+          let model_file = Option.value model_file
               ~default:(sprintf "%s.model" training_set_file)
-            in
-            Svm.Model.save model model_file
-          | Some n_folds ->
-            let predicted = Svm.cross_validation
+          in
+          Svm.Model.save model model_file
+        | Some n_folds ->
+          let predicted = Svm.cross_validation
               ?svm_type
               ?kernel
               ?degree
@@ -170,17 +170,17 @@ let train_cmd =
               ~verbose:(not quiet)
               ~n_folds
               problem
-            in
-            let expected = Svm.Problem.get_targets problem in
-            match Option.value svm_type ~default:`C_SVC with
-            | `C_SVC | `NU_SVC | `ONE_CLASS ->
-              let accuracy = Stats.calc_accuracy expected predicted in
-              printf "Cross Validation Accuracy = %g%%\n" (100. *. accuracy)
-            | `EPSILON_SVR | `NU_SVR ->
-              let mse = Stats.calc_mse expected predicted in
-              let scc = Stats.calc_scc expected predicted in
-              printf "Cross Validation Mean squared error = %g\n" mse;
-              printf "Cross Validation Squared correlation coefficient = %g\n" scc)
+          in
+          let expected = Svm.Problem.get_targets problem in
+          match Option.value svm_type ~default:`C_SVC with
+          | `C_SVC | `NU_SVC | `ONE_CLASS ->
+            let accuracy = Stats.calc_accuracy expected predicted in
+            printf "Cross Validation Accuracy = %g%%\n" (100. *. accuracy)
+          | `EPSILON_SVR | `NU_SVR ->
+            let mse = Stats.calc_mse expected predicted in
+            let scc = Stats.calc_scc expected predicted in
+            printf "Cross Validation Mean squared error = %g\n" mse;
+            printf "Cross Validation Squared correlation coefficient = %g\n" scc)
 
 let predict_cmd =
   Command.basic ~summary:"svm prediction"
@@ -188,33 +188,33 @@ let predict_cmd =
       empty
       (* +> flag "-b" no_arg *)
       (*   ~doc:"wether to predict probability estimates, 0 or 1 (default 0); \\ *)
-      (*         for one-class SVM only 0 is supported" *)
+           (*         for one-class SVM only 0 is supported" *)
       +> anon ("TEST-SET-FILE" %: file)
       +> anon ("MODEL-FILE" %: file)
       +> anon ("OUTPUT-FILE" %: file)
     )
     (fun (* probability *) test_set_file model_file output_file () ->
-      let model = Svm.Model.load model_file in
-      match Result.try_with (fun () -> Svm.predict_from_file model test_set_file) with
-      | Error exn ->
-        prerr_endline (Exn.to_string exn);
-        exit 1
-      | Ok (`Expected expected, `Predicted predicted) ->
-        let n_samples = Vec.dim predicted in
-        Out_channel.with_file output_file ~f:(fun oc ->
-          for i = 1 to n_samples do
-            Out_channel.output_string oc (sprintf "%g\n" predicted.{i})
-          done);
-        match Svm.Model.get_svm_type model with
-        | `C_SVC | `NU_SVC | `ONE_CLASS ->
-          let n_correct = Stats.calc_n_correct expected predicted in
-          let accuracy = Float.(of_int n_correct / of_int n_samples * 100.) in
-          printf "Accuracy = %g%% (%d/%d) (classification)\n" accuracy n_correct n_samples
-        | `EPSILON_SVR | `NU_SVR ->
-          let mse = Stats.calc_mse expected predicted in
-          let scc = Stats.calc_scc expected predicted in
-          printf "Mean squared error = %g (regression)\n" mse;
-          printf "Squared correlation coefficient = %g (regression)\n" scc)
+       let model = Svm.Model.load model_file in
+       match Result.try_with (fun () -> Svm.predict_from_file model test_set_file) with
+       | Error exn ->
+         prerr_endline (Exn.to_string exn);
+         exit 1
+       | Ok (`Expected expected, `Predicted predicted) ->
+         let n_samples = Vec.dim predicted in
+         Out_channel.with_file output_file ~f:(fun oc ->
+           for i = 1 to n_samples do
+             Out_channel.output_string oc (sprintf "%g\n" predicted.{i})
+           done);
+         match Svm.Model.get_svm_type model with
+         | `C_SVC | `NU_SVC | `ONE_CLASS ->
+           let n_correct = Stats.calc_n_correct expected predicted in
+           let accuracy = Float.(of_int n_correct / of_int n_samples * 100.) in
+           printf "Accuracy = %g%% (%d/%d) (classification)\n" accuracy n_correct n_samples
+         | `EPSILON_SVR | `NU_SVR ->
+           let mse = Stats.calc_mse expected predicted in
+           let scc = Stats.calc_scc expected predicted in
+           printf "Mean squared error = %g (regression)\n" mse;
+           printf "Squared correlation coefficient = %g (regression)\n" scc)
 
 let () =
   Exn.handle_uncaught ~exit:true (fun () ->

@@ -3,12 +3,12 @@ open Libsvm
 
 let () =
   let x = Mat.of_array
-    [|
-      [| 0.; 0. |];
-      [| 0.; 1. |];
-      [| 1.; 0. |];
-      [| 1.; 1. |];
-    |]
+      [|
+        [| 0.; 0. |];
+        [| 0.; 1. |];
+        [| 1.; 0. |];
+        [| 1.; 1. |];
+      |]
   in
   let targets = Vec.of_array [| 0.; 1.; 1.; 0. |] in
   let problem = Svm.Problem.create ~x ~y:targets in

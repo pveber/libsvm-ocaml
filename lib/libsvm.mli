@@ -152,11 +152,11 @@ module Svm : sig
   val train :
     ?svm_type:[ `C_SVC | `NU_SVC | `ONE_CLASS | `EPSILON_SVR | `NU_SVR ]
     -> ?kernel:[
-    | `LINEAR       (* u'*v *)
-    | `POLY         (* (gamma*u'*v + coef0)^degree *)
-    | `RBF          (* exp(-gamma*|u-v|^2) *)
-    | `SIGMOID      (* tanh(gamma*u'*v + coef0) *)
-    | `PRECOMPUTED  (* kernel values are stored in a file *)
+      | `LINEAR       (* u'*v *)
+      | `POLY         (* (gamma*u'*v + coef0)^degree *)
+      | `RBF          (* exp(-gamma*|u-v|^2) *)
+      | `SIGMOID      (* tanh(gamma*u'*v + coef0) *)
+      | `PRECOMPUTED  (* kernel values are stored in a file *)
     ]
     -> ?degree:int
     -> ?gamma:float
@@ -182,11 +182,11 @@ module Svm : sig
   val cross_validation :
     ?svm_type:[ `C_SVC | `NU_SVC | `ONE_CLASS | `EPSILON_SVR | `NU_SVR ]
     -> ?kernel:[
-    | `LINEAR       (* u'*v *)
-    | `POLY         (* (gamma*u'*v + coef0)^degree *)
-    | `RBF          (* exp(-gamma*|u-v|^2) *)
-    | `SIGMOID      (* tanh(gamma*u'*v + coef0) *)
-    | `PRECOMPUTED  (* kernel values are stored in a file *)
+      | `LINEAR       (* u'*v *)
+      | `POLY         (* (gamma*u'*v + coef0)^degree *)
+      | `RBF          (* exp(-gamma*|u-v|^2) *)
+      | `SIGMOID      (* tanh(gamma*u'*v + coef0) *)
+      | `PRECOMPUTED  (* kernel values are stored in a file *)
     ]
     -> ?degree:int
     -> ?gamma:float

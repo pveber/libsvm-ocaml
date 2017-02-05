@@ -33,18 +33,18 @@ module Svm = struct
   type model
 
   type svm_type =
-  | C_SVC
-  | NU_SVC
-  | ONE_CLASS
-  | EPSILON_SVR
-  | NU_SVR
+    | C_SVC
+    | NU_SVC
+    | ONE_CLASS
+    | EPSILON_SVR
+    | NU_SVR
 
   type kernel_type =
-  | LINEAR
-  | POLY
-  | RBF
-  | SIGMOID
-  | PRECOMPUTED
+    | LINEAR
+    | POLY
+    | RBF
+    | SIGMOID
+    | PRECOMPUTED
 
   type svm_params = {
     svm_type : svm_type;
@@ -294,9 +294,11 @@ module Svm = struct
           else if Float.(=.) value max_feats.{index} then
             Stub.svm_node_array_set nodes j index upper
           else
-            let new_value = lower +. (upper-.lower) *.
-              (value-.min_feats.{index}) /.
-              (max_feats.{index}-.min_feats.{index})
+            let new_value =
+              lower +.
+              (upper -. lower) *.
+              (value -. min_feats.{index}) /.
+              (max_feats.{index} -. min_feats.{index})
             in
             Stub.svm_node_array_set nodes j index new_value
         done;
@@ -402,9 +404,9 @@ module Svm = struct
       ?(verbose=false)
       problem =
     let params = create_params
-      ~gamma:(Option.value gamma ~default:(1. /. float problem.Problem.n_feats))
-      ~svm_type ~kernel ~degree ~coef0 ~c ~nu ~eps
-      ~cachesize ~tol ~shrinking ~probability ~weights
+        ~gamma:(Option.value gamma ~default:(1. /. float problem.Problem.n_feats))
+        ~svm_type ~kernel ~degree ~coef0 ~c ~nu ~eps
+        ~cachesize ~tol ~shrinking ~probability ~weights
     in
     if not verbose then Stub.svm_set_quiet_mode () else ();
     Stub.svm_train problem.Problem.prob params
@@ -426,17 +428,17 @@ module Svm = struct
       ?(verbose=false)
       ~n_folds problem =
     let params = create_params
-      ~gamma:(Option.value gamma ~default:(1. /. float problem.Problem.n_feats))
-      ~svm_type ~kernel ~degree ~coef0 ~c ~nu ~eps
-      ~cachesize ~tol ~shrinking ~probability ~weights
+        ~gamma:(Option.value gamma ~default:(1. /. float problem.Problem.n_feats))
+        ~svm_type ~kernel ~degree ~coef0 ~c ~nu ~eps
+        ~cachesize ~tol ~shrinking ~probability ~weights
     in
     if not verbose then Stub.svm_set_quiet_mode () else ();
     Stub.svm_cross_validation problem.Problem.prob params n_folds
 
   let predict_one model ~x =
     let nodes = match Stub.svm_get_kernel_type model with
-    | PRECOMPUTED -> svm_node_array_of_vec x
-    | _ -> sparse_svm_node_array_of_vec x
+      | PRECOMPUTED -> svm_node_array_of_vec x
+      | _ -> sparse_svm_node_array_of_vec x
     in
     Stub.svm_predict model nodes
 
@@ -480,8 +482,8 @@ module Svm = struct
     | C_SVC | NU_SVC ->
       if Stub.svm_check_probability_model model then
         let nodes = match Stub.svm_get_kernel_type model with
-        | PRECOMPUTED -> svm_node_array_of_vec x
-        | _ -> sparse_svm_node_array_of_vec x
+          | PRECOMPUTED -> svm_node_array_of_vec x
+          | _ -> sparse_svm_node_array_of_vec x
         in
         Stub.svm_predict_probability model nodes
       else
@@ -547,6 +549,8 @@ module Stats = struct
     done;
     let sqr x = x *. x in
     let l = float l in
-    Float.(sqr (l * !sum_xy - !sum_x * !sum_y) /
-             ((l * !sum_xx - sqr !sum_x) * (l * !sum_yy - sqr !sum_y)))
+    Float.(
+      sqr (l * !sum_xy - !sum_x * !sum_y) /
+      ((l * !sum_xx - sqr !sum_x) * (l * !sum_yy - sqr !sum_y))
+    )
 end
