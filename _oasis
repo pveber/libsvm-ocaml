@@ -52,7 +52,7 @@ Executable svm_cli
   Path:           examples
   MainIs:         svm_cli.ml
   Install:        false
-  BuildDepends:   libsvm, core, ppx_sexp_conv
+  BuildDepends:   libsvm,core,ppx_sexp_conv
   CompiledObject: best
 
 Executable log
@@ -60,7 +60,7 @@ Executable log
   Path:           examples
   MainIs:         log.ml
   Install:        false
-  BuildDepends:   libsvm, archimedes, gsl
+  BuildDepends:   libsvm,archimedes,gsl
   CompiledObject: best
 
 # Tests
