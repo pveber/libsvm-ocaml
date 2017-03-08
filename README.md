@@ -27,7 +27,7 @@ Usage
 ### Documentation
 
 The API-documentation of this distribution can be built with `make doc`.
-It can also be found [online](http://ogu.bitbucket.org/libsvm-ocaml/api/).
+It can also be found [online](http://ogu.bitbucket.io/libsvm-ocaml/api/).
 
 ### Examples
 
