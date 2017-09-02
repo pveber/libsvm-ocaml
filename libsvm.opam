@@ -8,6 +8,7 @@ license: "LGPL-2.1+ with OCaml linking exception"
 homepage: "https://bitbucket.org/ogu/libsvm-ocaml"
 bug-reports: "https://bitbucket.org/ogu/libsvm-ocaml/issues"
 dev-repo: "https://bitbucket.org/ogu/libsvm-ocaml.git"
+tags: [ "clib:svm"  ]
 build: [
   ["./configure" "--prefix=%{prefix}%"]
   [make]
@@ -17,6 +18,10 @@ remove: ["ocamlfind" "remove" "libsvm"]
 depends: [
   "core_kernel"
   "lacaml"
+]
+depexts: [
+  [["ubuntu"]["libsvm-dev"]]
+  [["debian"]["libsvm-dev"]]
 ]
 available: [ ocaml-version >= "4.03.0" ]
 descr: "
