@@ -10,14 +10,12 @@ bug-reports: "https://bitbucket.org/ogu/libsvm-ocaml/issues"
 dev-repo: "https://bitbucket.org/ogu/libsvm-ocaml.git"
 tags: [ "clib:svm"  ]
 build: [
-  ["./configure" "--prefix=%{prefix}%"]
-  [make]
+  ["jbuilder" "build" "--only-packages" "libsvm" "--root" "." "-j" jobs "@install"]
 ]
-install: [make "install"]
-remove: ["ocamlfind" "remove" "libsvm"]
 depends: [
   "core_kernel"
   "lacaml"
+  "jbuilder" {build & >= "1.0+beta2"}
 ]
 depexts: [
   [["ubuntu"]["libsvm-dev"]]

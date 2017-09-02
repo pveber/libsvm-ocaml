@@ -1,8 +1,3 @@
-*.native
-*.byte
-/setup.log
-/setup.data
-/svmguide/data
-/_log
-/_build
-/API.docdir
+_build
+*.install
+*.merlin
