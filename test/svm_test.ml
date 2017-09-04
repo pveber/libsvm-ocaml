@@ -1,6 +1,6 @@
-open Core_kernel.Std
+open Base
 open Lacaml.D
-open Format
+open Caml.Format
 open Lacaml.Io
 open Libsvm
 

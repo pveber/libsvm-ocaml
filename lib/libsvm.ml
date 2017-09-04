@@ -23,9 +23,20 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *)
 
-open! Core_kernel.Std
+open! Base
+open Stdio
 open Lacaml.D
 open Printf
+
+(* base doesn't include this stuff as opposed to core. It's small enough that we
+   can just include it *)
+module Float = struct
+  include Float
+  let robust_comparison_tolerance = 1E-7
+  let ( >=. ) x y = x >= y - robust_comparison_tolerance
+  let ( <=. ) x y = y >=. x
+  let ( =. ) x y = x >=. y && y >=. x
+end
 
 module Svm = struct
   type problem
@@ -129,15 +140,15 @@ module Svm = struct
      value and creates a sparse svm node array. *)
   let sparse_svm_node_array_of_vec v =
     let count_nonzeros v = Vec.fold (fun count x ->
-      count + if x <> 0. then 1 else 0) 0 v
+      count + if Float.(x <> 0.) then 1 else 0) 0 v
     in
     let size = count_nonzeros v + 1 in
     let nodes = Stub.svm_node_array_create size in
     let pos = ref 0 in
     Vec.iteri (fun index value ->
-      if value <> 0. then begin
+      if Float.(value <> 0.) then begin
         Stub.svm_node_array_set nodes !pos index value;
-        incr pos
+        Caml.incr pos
       end) v;
     Stub.svm_node_array_set nodes !pos (-1) 0.;
     nodes
@@ -163,7 +174,7 @@ module Svm = struct
     In_channel.with_file file ~f:(fun ic ->
       In_channel.fold_lines ic ~init:0 ~f:(fun count _line -> count + 1))
 
-  let parse_line file = stage (fun line ~pos ->
+  let parse_line file = Staged.stage (fun line ~pos ->
     let result = Result.try_with (fun () ->
       match String.rstrip line |> String.split ~on:' ' with
       | [] -> assert false
@@ -220,7 +231,7 @@ module Svm = struct
       let x = Stub.svm_node_matrix_create n_samples in
       let y = Stub.double_array_create n_samples in
       In_channel.with_file file ~f:(fun ic ->
-        let parse_line = unstage (parse_line file) in
+        let parse_line = Staged.unstage (parse_line file) in
         let rec loop i =
           match In_channel.input_line ic with
           | None -> ()
@@ -295,10 +306,11 @@ module Svm = struct
             Stub.svm_node_array_set nodes j index upper
           else
             let new_value =
-              lower +.
-              (upper -. lower) *.
-              (value -. min_feats.{index}) /.
-              (max_feats.{index} -. min_feats.{index})
+              let open Float in
+              lower +
+              (upper - lower) *
+              (value - min_feats.{index}) /
+              (max_feats.{index} - min_feats.{index})
             in
             Stub.svm_node_array_set nodes j index new_value
         done;
@@ -404,7 +416,7 @@ module Svm = struct
       ?(verbose=false)
       problem =
     let params = create_params
-        ~gamma:(Option.value gamma ~default:(1. /. float problem.Problem.n_feats))
+        ~gamma:(Option.value gamma ~default:(Float.(1. / Caml.float problem.Problem.n_feats)))
         ~svm_type ~kernel ~degree ~coef0 ~c ~nu ~eps
         ~cachesize ~tol ~shrinking ~probability ~weights
     in
@@ -428,7 +440,7 @@ module Svm = struct
       ?(verbose=false)
       ~n_folds problem =
     let params = create_params
-        ~gamma:(Option.value gamma ~default:(1. /. float problem.Problem.n_feats))
+        ~gamma:(Option.value gamma ~default:(Float.(1. / Caml.float problem.Problem.n_feats)))
         ~svm_type ~kernel ~degree ~coef0 ~c ~nu ~eps
         ~cachesize ~tol ~shrinking ~probability ~weights
     in
@@ -468,7 +480,7 @@ module Svm = struct
         for j = i+1 to n_classes-1 do
           dec_mat.(i).(j) <-   dec_vals.(!count);
           dec_mat.(j).(i) <- -.dec_vals.(!count);
-          incr count
+          Caml.incr count
         done
       done;
       dec_mat
@@ -494,7 +506,7 @@ module Svm = struct
     let expected = Vec.create n_samples in
     let predicted = Vec.create n_samples in
     In_channel.with_file file ~f:(fun ic ->
-      let parse_line = unstage (parse_line file) in
+      let parse_line = Staged.unstage (parse_line file) in
       let rec loop i =
         match In_channel.input_line ic with
         | None -> (`Expected expected, `Predicted predicted)
@@ -519,18 +531,18 @@ module Stats = struct
 
   let calc_n_correct x y =
     check_dimension x y ~location:"calc_n_correct";
-    Vec.fold (fun count x -> count + if x = 0. then 1 else 0) 0 (Vec.sub x y)
+    Vec.fold (fun count x -> count + if Float.(x = 0.) then 1 else 0) 0 (Vec.sub x y)
 
   let calc_accuracy x y =
     check_dimension x y ~location:"calc_accuracy";
     let l = Vec.dim x in
     let n_correct = calc_n_correct x y in
-    float n_correct /. float l
+    Float.(Caml.float n_correct / Caml.float l)
 
   let calc_mse x y =
     check_dimension x y ~location:"calc_mse";
     let l = Vec.dim x in
-    Vec.ssqr_diff x y /. float l
+    Float.(Vec.ssqr_diff x y / Caml.(float l))
 
   let calc_scc x y =
     check_dimension x y ~location:"calc_scc";
@@ -541,14 +553,15 @@ module Stats = struct
     let sum_yy = ref 0. in
     let sum_xy = ref 0. in
     for i = 1 to l do
-      sum_x  := !sum_x  +. x.{i};
-      sum_y  := !sum_y  +. y.{i};
-      sum_xx := !sum_xx +. x.{i} *. x.{i};
-      sum_yy := !sum_yy +. y.{i} *. y.{i};
-      sum_xy := !sum_xy +. x.{i} *. y.{i};
+      let open Float in
+      sum_x  := !sum_x  + x.{i};
+      sum_y  := !sum_y  + y.{i};
+      sum_xx := !sum_xx + x.{i} * x.{i};
+      sum_yy := !sum_yy + y.{i} * y.{i};
+      sum_xy := !sum_xy + x.{i} * y.{i};
     done;
-    let sqr x = x *. x in
-    let l = float l in
+    let sqr x = Float.(x * x) in
+    let l = Caml.float l in
     Float.(
       sqr (l * !sum_xy - !sum_x * !sum_y) /
       ((l * !sum_xx - sqr !sum_x) * (l * !sum_yy - sqr !sum_y))
