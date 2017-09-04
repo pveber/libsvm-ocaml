@@ -1,3 +1,6 @@
+2017-10-04: Vendor libsvm and switch to jbuilder.  Thanks to Rudi Grinberg
+            <rudi.grinberg@gmail.com> for this contribution!
+
 2016-02-28: Fix compatibility issues with `core` and `lacaml`.
 
 2016-01-17: Migrate from campl4 to ppx.
