@@ -22,7 +22,7 @@
    License along with this library; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
-
+extern "C" {
 #include <stdio.h>
 #include <string.h>
 
@@ -34,7 +34,7 @@
 #include <caml/signals.h>
 #include <caml/bigarray.h>
 
-#include <libsvm/svm.h>
+#include <svm.h>
 
 /* Type definitions */
 
@@ -586,4 +586,6 @@ CAMLprim value svm_predict_probability_stub(value v_model, value v_array)
 
   caml_stat_free(estimates);
   CAMLreturn(v_result);
+}
+
 }
