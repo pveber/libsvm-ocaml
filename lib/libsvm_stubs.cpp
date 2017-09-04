@@ -34,7 +34,7 @@ extern "C" {
 #include <caml/signals.h>
 #include <caml/bigarray.h>
 
-#include <svm.h>
+#include "svm.h"
 
 /* Type definitions */
 
