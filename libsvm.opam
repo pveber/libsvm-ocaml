@@ -10,8 +10,9 @@ bug-reports: "https://bitbucket.org/ogu/libsvm-ocaml/issues"
 dev-repo: "https://bitbucket.org/ogu/libsvm-ocaml.git"
 tags: [ "clib:svm"  ]
 build: [
-  ["jbuilder" "build" "--only-packages" "libsvm" "--root" "." "-j" jobs "@install"]
+  ["jbuilder" "build" "-p" name "-j" jobs]
 ]
+build-test: [["jbuilder" "runtest" "-p" name "-j" jobs]]
 depends: [
   "base"
   "stdio"
