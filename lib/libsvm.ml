@@ -478,8 +478,8 @@ module Svm = struct
       let count = ref 0 in
       for i = 0 to n_classes-1 do
         for j = i+1 to n_classes-1 do
-          dec_mat.(i).(j) <-   dec_vals.(!count);
-          dec_mat.(j).(i) <- -.dec_vals.(!count);
+          Float.(dec_mat.(i).(j) <-  dec_vals.(!count));
+          Float.(dec_mat.(j).(i) <- -dec_vals.(!count));
           Caml.incr count
         done
       done;
