@@ -18,10 +18,6 @@ depends: [
   "lacaml"
   "jbuilder" {build & >= "1.0+beta2"}
 ]
-depexts: [
-  [["ubuntu"]["libsvm-dev"]]
-  [["debian"]["libsvm-dev"]]
-]
 available: [ ocaml-version >= "4.03.0" ]
 descr: "
 LIBSVM bindings for OCaml
