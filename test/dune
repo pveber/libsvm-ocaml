@@ -1,6 +1,6 @@
-(executable
- (name svm_test)
- (libraries libsvm))
+(executables
+ (names svm_test svm_test2)
+ (libraries core_kernel libsvm))
 
 (alias
  (name runtest)
