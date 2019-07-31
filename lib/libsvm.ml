@@ -34,7 +34,6 @@ module Float = struct
   include Float
   let robust_comparison_tolerance = 1E-7
   let ( >=. ) x y = x >= y - robust_comparison_tolerance
-  let ( <=. ) x y = y >=. x
   let ( =. ) x y = x >=. y && y >=. x
 end
 
@@ -478,8 +477,8 @@ module Svm = struct
       let count = ref 0 in
       for i = 0 to n_classes-1 do
         for j = i+1 to n_classes-1 do
-          Float.(dec_mat.(i).(j) <-  dec_vals.(!count));
-          Float.(dec_mat.(j).(i) <- -dec_vals.(!count));
+          dec_mat.(i).(j) <-    dec_vals.(!count) ;
+          dec_mat.(j).(i) <- -. dec_vals.(!count) ;
           Caml.incr count
         done
       done;
