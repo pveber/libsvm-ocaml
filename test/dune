@@ -1,0 +1,10 @@
+(executable
+ (name svm_test)
+ (libraries libsvm))
+
+(alias
+ (name runtest)
+ (deps
+  (:< svm_test.exe))
+ (action
+  (run %{<})))

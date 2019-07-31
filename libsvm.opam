@@ -11,14 +11,14 @@ bug-reports: "https://bitbucket.org/ogu/libsvm-ocaml/issues"
 dev-repo: "https://bitbucket.org/ogu/libsvm-ocaml.git"
 tags: [ "clib:svm"  ]
 build: [
-  ["jbuilder" "build" "-p" name "-j" jobs]
+  ["dune" "build" "-p" name "-j" jobs]
 ]
-build-test: [["jbuilder" "runtest" "-p" name "-j" jobs]]
+build-test: [["dune" "runtest" "-p" name "-j" jobs]]
 depends: [
   "base"
   "stdio"
   "lacaml"
-  "jbuilder" {build & >= "1.0+beta2"}
+  "dune" {build & >= "1.0"}
 ]
 available: [ ocaml-version >= "4.03.0" ]
 descr: "
