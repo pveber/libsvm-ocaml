@@ -37,7 +37,7 @@ module Svm : sig
     (** [create x y] constructs a problem from a feature matrix [x] and target
         vector [y]. Each row of [x] is a feature vector of a training
         instance. *)
-    val create : x:mat -> y:vec -> t
+    val create : x:(int * float) list array -> y:vec -> t
 
     (** [create_k k y] constructs a problem from a matrix [k] and target vector
         [y]. The matrix [k] has to be of the following form:
@@ -52,7 +52,7 @@ module Svm : sig
 
         where L denotes the number of training instances and K(x,y) is the
         precomputed kernel value of the two training instances x and y. *)
-    (* val create_k : k:mat -> y:vec -> t *)
+    val create_dense : x:mat -> y:vec -> t
 
     (** [get_n_samples prob] @return the number of training samples. *)
     val get_n_samples : t -> int
@@ -63,9 +63,9 @@ module Svm : sig
     (** [get_targets prob] @return the targets of training instances. *)
     val get_targets : t -> vec
 
-    (* (\** [load filename] loads a problem from the file [filename]. *)
-    (*     @raise Failure if an error occured during parsing of [filename]. *\) *)
-    (* val load : string -> t *)
+    (** [load filename] loads a problem from the file [filename].
+        @raise Failure if an error occured during parsing of [filename]. *)
+    val load : string -> t
 
     (** [output prob oc] outputs the problem [prob] to an output channel [oc].
         NOTE: the function does not close the output channel. *)

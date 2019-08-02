@@ -115,7 +115,7 @@ CAMLprim value svm_problem_y_get_stub(value v_prob, value v_idx)
   CAMLreturn(caml_copy_double(prob->y[i]));
 }
 
-CAMLprim value svm_problem_x_set_stub(value v_prob, value v_x)
+CAMLprim value svm_problem_x_dense_set_stub(value v_prob, value v_x)
 {
   CAMLparam2(v_prob, v_x);
   svm_problem* prob = Svm_problem_val(v_prob);
@@ -126,39 +126,61 @@ CAMLprim value svm_problem_x_set_stub(value v_prob, value v_x)
   int n = Caml_ba_array_val(v_x)->dim[1];
   double* data = (double*) Caml_ba_data_val(v_x);
 
-  int* nz = (int*) calloc(m, sizeof(int));
-  int nz_total = 0;
+  prob->x = (svm_node **) malloc(sizeof(svm_node*) * m);
+  svm_node* buf = (svm_node*) malloc(sizeof(svm_node) * m * (n + 1));
+  prob->x[0] = buf;
+  for(int i = 1; i < m; i++)
+    prob->x[i] = prob->x[i - 1] + n + 1;
+
   int k = 0;
   for(int j = 0; j < n; j++)
-      for(int i = 0; i < m; i++, k++)
-          if(data[k] != 0.) {
-              nz[i]++;
-              nz_total++;
-          }
+    for(int i = 0; i < m; i++, k++) {
+      svm_node* n = prob->x[i] + j;
+      n->index = j;
+      n->value = data[k];
+    }
+  for(int i = 0; i < m; i++)
+    prob->x[i][n].index = -1;
+
+  CAMLreturn(Val_unit);
+}
+
+
+CAMLprim value svm_problem_x_sparse_set_stub(value v_prob, value v_x)
+{
+  CAMLparam2(v_prob, v_x);
+  svm_problem* prob = Svm_problem_val(v_prob);
+
+  int m = Wosize_val(v_x);
+  int* nz = (int*) calloc(m, sizeof(int));
+  int nz_total = 0;
+  for(int i = 0; i < m; i++) {
+    for(value v = Field(v_x, i); v != Val_emptylist; ) {
+      nz[i]++;
+      nz_total++;
+      v = Field(v, 1);
+    }
+  }
   prob->x = (svm_node **) malloc(sizeof(svm_node*) * m);
   svm_node* buf = (svm_node*) malloc(sizeof(svm_node) * (nz_total + m));
   prob->x[0] = buf;
   for(int i = 1; i < m; i++)
-      prob->x[i] = prob->x[i - 1] + nz[i-1] + 1;
+    prob->x[i] = prob->x[i - 1] + nz[i-1] + 1;
 
-  /* this table is used to perform a transpose/copy operation */
-  int* row_index = (int*) calloc(m, sizeof(int));
-  k = 0;
-  for(int j = 0; j < n; j++)
-      for(int i = 0; i < m; i++) {
-          if(data[k] != 0.) {
-              svm_node* n = prob->x[i] + row_index[i];
-              n->index = j;
-              n->value = data[k];
-              row_index[i]++;
-          }
-          k++;
-      }
-  for(int i = 0; i < m; i++)
-      prob->x[i][row_index[i]].index = -1;
+  for(int i = 0; i < m; i++) {
+    int j = 0;
+    for(value v = Field(v_x, i);
+	v != Val_emptylist;
+	j++, v = Field(v, 1)) {
+      svm_node* n = prob->x[i] + j;
+      value pair = Field(v, 0);
+      n->index = Int_val(Field(pair, 0));
+      n->value = Double_val(Field(pair, 1));
+    }
+    prob->x[i][j].index = -1;
+  }
 
   free(nz);
-  free(row_index);
   CAMLreturn(Val_unit);
 }
 

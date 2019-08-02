@@ -83,8 +83,10 @@ module Svm = struct
       problem -> vec -> unit = "svm_problem_y_set_stub"
     external svm_problem_y_get :
       problem -> int -> float = "svm_problem_y_get_stub"
-    external svm_problem_x_set :
-      problem -> mat -> unit = "svm_problem_x_set_stub"
+    external svm_problem_x_dense_set :
+      problem -> mat -> unit = "svm_problem_x_dense_set_stub"
+    external svm_problem_x_sparse_set :
+      problem -> (int * float) list array -> unit = "svm_problem_x_sparse_set_stub"
     external svm_problem_x_get :
       problem -> int -> int -> (int * float) = "svm_problem_x_get_stub"
     external svm_problem_width :
@@ -119,26 +121,26 @@ module Svm = struct
     (*   model -> svm_node_array -> float * float array = "svm_predict_probability_stub" *)
   end
 
-  (* let count_lines file = *)
-  (*   In_channel.with_file file ~f:(fun ic -> *)
-  (*     In_channel.fold_lines ic ~init:0 ~f:(fun count _line -> count + 1)) *)
+  let count_lines file =
+    In_channel.with_file file ~f:(fun ic ->
+      In_channel.fold_lines ic ~init:0 ~f:(fun count _line -> count + 1))
 
-  (* let parse_line file = Staged.stage (fun line ~pos -> *)
-  (*   let result = Result.try_with (fun () -> *)
-  (*     match String.rstrip line |> String.split ~on:' ' with *)
-  (*     | [] -> assert false *)
-  (*     | x :: xs -> *)
-  (*       let target = Float.of_string x in *)
-  (*       let feats = List.map xs ~f:(fun str -> *)
-  (*         let index, value = String.lsplit2_exn str ~on:':' in *)
-  (*         Int.of_string index, Float.of_string value) *)
-  (*       in *)
-  (*       target, feats) *)
-  (*   in *)
-  (*   match result with *)
-  (*   | Ok x -> x *)
-  (*   | Error exn -> *)
-  (*     failwithf "%s: wrong input format at line %d: %s" file pos (Exn.to_string exn) ()) *)
+  let parse_line file = Staged.stage (fun line ~pos ->
+    let result = Result.try_with (fun () ->
+      match String.rstrip line |> String.split ~on:' ' with
+      | [] -> assert false
+      | x :: xs ->
+        let target = Float.of_string x in
+        let feats = List.map xs ~f:(fun str ->
+          let index, value = String.lsplit2_exn str ~on:':' in
+          Int.of_string index, Float.of_string value)
+        in
+        target, feats)
+    in
+    match result with
+    | Ok x -> x
+    | Error exn ->
+      failwithf "%s: wrong input format at line %d: %s" file (pos + 1) (Exn.to_string exn) ())
 
   module Problem = struct
     type t = {
@@ -151,46 +153,52 @@ module Svm = struct
     let get_n_feats t = t.n_feats
 
     let create ~x ~y =
+      if Array.is_empty x then raise (invalid_arg "empty training set") ;
+      let n_feats = Array.fold x ~init:Int.min_value ~f:(fun acc x -> Int.max acc (List.length x)) in
+      let n_samples = Array.length x in
+      let prob = Stub.svm_problem_create () in
+      Stub.svm_problem_l_set prob n_samples;
+      Stub.svm_problem_x_sparse_set prob x ;
+      Stub.svm_problem_y_set prob y;
+      { prob ; n_feats ; n_samples }
+
+    let create_dense ~x ~y =
       let n_samples = Mat.dim1 x in
       let n_feats = Mat.dim2 x in
       let prob = Stub.svm_problem_create () in
       Stub.svm_problem_l_set prob n_samples;
-      Stub.svm_problem_x_set prob x;
+      Stub.svm_problem_x_dense_set prob x;
       Stub.svm_problem_y_set prob y;
       { n_samples;
         n_feats;
         prob;
       }
 
-    (* let create_k ~k ~y = create_gen k y ~f:svm_node_array_of_vec *)
-
-    (* let load file = *)
-    (*   let n_samples = count_lines file in *)
-    (*   let n_feats = ref 0 in *)
-    (*   let x = Stub.svm_node_matrix_create n_samples in *)
-    (*   let y = Stub.double_array_create n_samples in *)
-    (*   In_channel.with_file file ~f:(fun ic -> *)
-    (*     let parse_line = Staged.unstage (parse_line file) in *)
-    (*     let rec loop i = *)
-    (*       match In_channel.input_line ic with *)
-    (*       | None -> () *)
-    (*       | Some line -> *)
-    (*         let target, feats = parse_line line ~pos:i in *)
-    (*         Stub.double_array_set y (i-1) target; *)
-    (*         let len = List.length feats in *)
-    (*         Stub.svm_node_matrix_set x (i-1) (svm_node_array_of_list feats ~len); *)
-    (*         n_feats := max !n_feats len; *)
-    (*         loop (i+1) *)
-    (*     in *)
-    (*     loop 1); *)
-    (*   let prob = Stub.svm_problem_create () in *)
-    (*   Stub.svm_problem_l_set prob n_samples; *)
-    (*   Stub.svm_problem_x_set prob (assert false) (\* x *\); *)
-    (*   Stub.svm_problem_y_set prob y; *)
-    (*   { n_samples; *)
-    (*     n_feats = !n_feats; *)
-    (*     prob; *)
-    (*   } *)
+    let load file =
+      let n_samples = count_lines file in
+      let n_feats = ref 0 in
+      let x = Array.create ~len:n_samples [] in
+      let y = Vec.create n_samples in
+      In_channel.with_file file ~f:(fun ic ->
+        let parse_line = Staged.unstage (parse_line file) in
+        let rec loop i =
+          match In_channel.input_line ic with
+          | None -> ()
+          | Some line ->
+            let target, feats = parse_line line ~pos:i in
+            y.{i} <- target ;
+            x.(i) <- feats ;
+            loop (i+1)
+        in
+        loop 1);
+      let prob = Stub.svm_problem_create () in
+      Stub.svm_problem_l_set prob n_samples;
+      Stub.svm_problem_x_sparse_set prob x ;
+      Stub.svm_problem_y_set prob y;
+      { n_samples;
+        n_feats = !n_feats;
+        prob;
+      }
 
     let get_targets t =
       let n = t.n_samples in
