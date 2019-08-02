@@ -52,7 +52,7 @@ module Svm : sig
 
         where L denotes the number of training instances and K(x,y) is the
         precomputed kernel value of the two training instances x and y. *)
-    val create_k : k:mat -> y:vec -> t
+    (* val create_k : k:mat -> y:vec -> t *)
 
     (** [get_n_samples prob] @return the number of training samples. *)
     val get_n_samples : t -> int
@@ -63,9 +63,9 @@ module Svm : sig
     (** [get_targets prob] @return the targets of training instances. *)
     val get_targets : t -> vec
 
-    (** [load filename] loads a problem from the file [filename].
-        @raise Failure if an error occured during parsing of [filename]. *)
-    val load : string -> t
+    (* (\** [load filename] loads a problem from the file [filename]. *)
+    (*     @raise Failure if an error occured during parsing of [filename]. *\) *)
+    (* val load : string -> t *)
 
     (** [output prob oc] outputs the problem [prob] to an output channel [oc].
         NOTE: the function does not close the output channel. *)
@@ -78,14 +78,14 @@ module Svm : sig
         each column in the feature matrix. *)
     val min_max_feats : t -> [ `Min of vec ] * [ `Max of vec ]
 
-    (** [scale ?lower ?upper prob min_feats max_feats] @return a linearly
-        scaled problem where each feature (attribute) lies in the range
-        \[[lower],[upper]\]. The default range is \[-1,1\]. *)
-    val scale :
-      ?lower:float -> ?upper:float
-      -> t
-      -> min_feats:vec -> max_feats:vec
-      -> t
+    (* (\** [scale ?lower ?upper prob min_feats max_feats] @return a linearly *)
+    (*     scaled problem where each feature (attribute) lies in the range *)
+    (*     \[[lower],[upper]\]. The default range is \[-1,1\]. *\) *)
+    (* val scale : *)
+    (*   ?lower:float -> ?upper:float *)
+    (*   -> t *)
+    (*   -> min_feats:vec -> max_feats:vec *)
+    (*   -> t *)
 
     (** [print prob] prints the internal representation of a problem.
         It is mainly used for debugging purposes. *)
@@ -206,35 +206,35 @@ module Svm : sig
 
   (** {2 SVM prediction} *)
 
-  (** [predict_one model x] does classification or regression on a test vector
-      [x] given a [model].
-      For a classification model, the predicted class for [x] is returned.
-      For a regression model, the function value of [x] is returned.
-      For a one-class model, +1 or -1 is returned. *)
-  val predict_one : Model.t -> x:vec -> float
+  (* (\** [predict_one model x] does classification or regression on a test vector *)
+  (*     [x] given a [model]. *)
+  (*     For a classification model, the predicted class for [x] is returned. *)
+  (*     For a regression model, the function value of [x] is returned. *)
+  (*     For a one-class model, +1 or -1 is returned. *\) *)
+  (* val predict_one : Model.t -> x:vec -> float *)
 
-  (** [predict model x] applies predict_one to each row of the matrix [x]. *)
-  val predict : Model.t -> x:mat -> vec
+  (* (\** [predict model x] applies predict_one to each row of the matrix [x]. *\) *)
+  (* val predict : Model.t -> x:mat -> vec *)
 
-  (** [predict_values model x] @return a matrix with decision values on a test
-      vector [x]. *)
-  val predict_values : Model.t -> x:vec -> float array array
+  (* (\** [predict_values model x] @return a matrix with decision values on a test *)
+  (*     vector [x]. *\) *)
+  (* val predict_values : Model.t -> x:vec -> float array array *)
 
-  (** [predict_probability m x] does classification or regression on a test
-      vector [x] based on a [model] with probability information.
-      @raise Invalid_argument if the model does not support probability
-      estimates. *)
-  val predict_probability : Model.t -> x:vec -> float * float array
+  (* (\** [predict_probability m x] does classification or regression on a test *)
+  (*     vector [x] based on a [model] with probability information. *)
+  (*     @raise Invalid_argument if the model does not support probability *)
+  (*     estimates. *\) *)
+  (* val predict_probability : Model.t -> x:vec -> float * float array *)
 
-  (** [predict_from_file model filename] does classification or regression
-      on the testing data given in [filename].
-      @return a pair vectors containing the expected (true) values form the
-      test file and the predicted ones computed from the given [model].
-      @raise Failure if an error occured during parsing of [filename]. *)
-  val predict_from_file :
-    Model.t
-    -> string
-    -> ([ `Expected of vec ] * [ `Predicted of vec ])
+  (* (\** [predict_from_file model filename] does classification or regression *)
+  (*     on the testing data given in [filename]. *)
+  (*     @return a pair vectors containing the expected (true) values form the *)
+  (*     test file and the predicted ones computed from the given [model]. *)
+  (*     @raise Failure if an error occured during parsing of [filename]. *\) *)
+  (* val predict_from_file : *)
+  (*   Model.t *)
+  (*   -> string *)
+  (*   -> ([ `Expected of vec ] * [ `Predicted of vec ]) *)
 end
 
 module Stats : sig
