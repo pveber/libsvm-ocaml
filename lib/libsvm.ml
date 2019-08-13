@@ -91,6 +91,8 @@ module Svm = struct
       problem -> int -> int -> (int * float) = "svm_problem_x_get_stub"
     external svm_problem_width :
       problem -> int -> int = "svm_problem_width_stub"
+    external svm_problem_scale :
+      problem -> lower:float -> upper:float -> unit = "svm_problem_scale"
     external svm_problem_print :
       problem -> unit = "svm_problem_print_stub"
     external svm_param_create : svm_params -> params = "svm_param_create_stub"
@@ -238,41 +240,8 @@ module Svm = struct
       done;
       (`Min min_feats, `Max max_feats)
 
-    (* let scale ?(lower= -.1.) ?(upper=1.) t ~min_feats ~max_feats = *)
-    (*   let n_samples = t.n_samples in *)
-    (*   let x = Stub.svm_node_matrix_create n_samples in *)
-    (*   let y = Stub.double_array_create n_samples in *)
-    (*   for i = 0 to n_samples-1 do *)
-    (*     let width = Stub.svm_problem_width t.prob i in *)
-    (*     let nodes = Stub.svm_node_array_create (width+1) in *)
-    (*     for j = 0 to width-1 do *)
-    (*       let index, value = Stub.svm_problem_x_get t.prob i j in *)
-    (*       if Float.(=.) value min_feats.{index} then *)
-    (*         Stub.svm_node_array_set nodes j index lower *)
-    (*       else if Float.(=.) value max_feats.{index} then *)
-    (*         Stub.svm_node_array_set nodes j index upper *)
-    (*       else *)
-    (*         let new_value = *)
-    (*           let open Float in *)
-    (*           lower + *)
-    (*           (upper - lower) * *)
-    (*           (value - min_feats.{index}) / *)
-    (*           (max_feats.{index} - min_feats.{index}) *)
-    (*         in *)
-    (*         Stub.svm_node_array_set nodes j index new_value *)
-    (*     done; *)
-    (*     Stub.svm_node_array_set nodes width (-1) 0.; *)
-    (*     Stub.svm_node_matrix_set x i nodes; *)
-    (*     Stub.double_array_set y i (Stub.svm_problem_y_get t.prob i); *)
-    (*   done; *)
-    (*   let scaled_prob = Stub.svm_problem_create () in *)
-    (*   Stub.svm_problem_l_set scaled_prob n_samples; *)
-    (*   Stub.svm_problem_x_set scaled_prob (assert false (\* x *\)); *)
-    (*   Stub.svm_problem_y_set scaled_prob y; *)
-    (*   { n_samples; *)
-    (*     n_feats = t.n_feats; *)
-    (*     prob = scaled_prob; *)
-    (*   } *)
+    let scale ?(lower= -.1.) ?(upper=1.) t =
+      Stub.svm_problem_scale ~lower ~upper t.prob
 
     let print t = Stub.svm_problem_print t.prob
   end

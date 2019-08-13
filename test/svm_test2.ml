@@ -44,6 +44,8 @@ let () =
   Gc.full_major () ;
   let prob = Libsvm.Svm.Problem.create ~x ~y in
   Libsvm.Svm.Problem.print prob ;
+  Libsvm.Svm.Problem.scale prob ;
+  Libsvm.Svm.Problem.print prob ;
   let res =
     Libsvm.Svm.cross_validation ~svm_type:`C_SVC ~kernel:`RBF prob ~n_folds:5
     |> Libsvm.Stats.calc_accuracy y

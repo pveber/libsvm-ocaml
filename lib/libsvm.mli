@@ -81,14 +81,13 @@ module Svm : sig
         each column in the feature matrix. *)
     val min_max_feats : t -> [ `Min of vec ] * [ `Max of vec ]
 
-    (* (\** [scale ?lower ?upper prob min_feats max_feats] @return a linearly *)
-    (*     scaled problem where each feature (attribute) lies in the range *)
-    (*     \[[lower],[upper]\]. The default range is \[-1,1\]. *\) *)
-    (* val scale : *)
-    (*   ?lower:float -> ?upper:float *)
-    (*   -> t *)
-    (*   -> min_feats:vec -> max_feats:vec *)
-    (*   -> t *)
+    (** [scale ?lower ?upper prob] scales in place [prob] such that
+       each feature (attribute) lies in the range
+       \[[lower],[upper]\]. The default range is \[-1,1\]. *)
+    val scale :
+      ?lower:float -> ?upper:float
+      -> t
+      -> unit
 
     (** [print prob] prints the internal representation of a problem.
         It is mainly used for debugging purposes. *)

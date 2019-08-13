@@ -25,6 +25,8 @@
 extern "C" {
 #include <stdio.h>
 #include <string.h>
+#include <climits>
+#include <cfloat>
 
 #include <caml/mlvalues.h>
 #include <caml/custom.h>
@@ -36,6 +38,9 @@ extern "C" {
 
     #include <cassert>
 #include "svm.h"
+
+#define max(x,y) (((x)>(y))?(x):(y))
+#define min(x,y) (((x)<(y))?(x):(y))
 
 /* Type definitions */
 
@@ -211,6 +216,50 @@ CAMLprim value svm_problem_width_stub(value v_prob, value v_i)
   while (x[i][j++].index != -1);
 
   CAMLreturn(Val_int(j-1));
+}
+
+CAMLprim value svm_problem_scale(value v_prob, value v_lower, value v_upper) {
+  CAMLparam3(v_prob, v_lower, v_upper);
+  svm_node **x = Svm_problem_val(v_prob)->x;
+  int l = Svm_problem_val(v_prob)->l;
+  int min_index = INT_MAX;
+  int max_index = INT_MIN;
+  double lower = Double_val(v_lower);
+  double upper = Double_val(v_upper);
+
+  for(int i = 0; i < l; i++)
+    for(int j = 0; ; j++) {
+      int index = x[i][j].index;
+      if(index == -1) break;
+      min_index = min(min_index, index);
+      max_index = max(max_index, index);
+    }
+  //  assert((max_index + 1) * sizeof(double) == 40);
+  double* feature_max = (double*) malloc((max_index + 1) * sizeof(double));
+  double* feature_min = (double*) malloc((max_index + 1) * sizeof(double));
+  for(int i = 0; i <= max_index; i++) {
+    feature_min[i] =   DBL_MAX;
+    feature_max[i] = - DBL_MAX;
+  }
+  for(int i = 0; i < l; i++)
+    for(int j = 0; ; j++) {
+      int index = x[i][j].index;
+      if(index == -1) break;
+      feature_min[index] = min(feature_min[index], x[i][j].value);
+      feature_max[index] = max(feature_max[index], x[i][j].value);
+    }
+  for(int i = 0; i < l; i++)
+    for(int j = 0; ; j++) {
+      int index = x[i][j].index;
+      if(index == -1) break;
+      x[i][j].value =
+	lower +
+	(upper - lower) * (x[i][j].value - feature_min[index])
+	/ (feature_max[index] - feature_min[index]);
+    }
+  free(feature_min);
+  free(feature_max);
+  CAMLreturn(Val_unit);
 }
 
 CAMLprim value svm_problem_print_stub(value v_prob)
