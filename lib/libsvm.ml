@@ -141,6 +141,25 @@ module Svm = struct
     | Error exn ->
       failwithf "%s: wrong input format at line %d: %s" file (pos + 1) (Exn.to_string exn) ()
 
+  let load_dataset file =
+    let n_samples = count_lines file in
+    let x = Array.create ~len:n_samples [] in
+    let y = Vec.create n_samples in
+    In_channel.with_file file ~f:(fun ic ->
+      let parse_line = parse_line file in
+      let rec loop i =
+        match In_channel.input_line ic with
+        | None -> ()
+        | Some line ->
+          let target, feats = parse_line line ~pos:i in
+          y.{i + 1} <- target ;
+          x.(i) <- feats ;
+          loop (i+1)
+      in
+      loop 0
+    ) ;
+    x, y
+
   module Problem = struct
     type t = {
       n_samples : int;
@@ -174,29 +193,14 @@ module Svm = struct
       }
 
     let load file =
-      let n_samples = count_lines file in
-      let n_feats = ref 0 in
-      let x = Array.create ~len:n_samples [] in
-      let y = Vec.create n_samples in
-      In_channel.with_file file ~f:(fun ic ->
-        let parse_line = parse_line file in
-        let rec loop i =
-          match In_channel.input_line ic with
-          | None -> ()
-          | Some line ->
-            let target, feats = parse_line line ~pos:i in
-            y.{i + 1} <- target ;
-            x.(i) <- feats ;
-            loop (i+1)
-        in
-        loop 0
-      ) ;
+      let x, y = load_dataset file in
+      let n_samples = Array.length x in
       let prob = Stub.svm_problem_create () in
       Stub.svm_problem_l_set prob n_samples;
       Stub.svm_problem_x_sparse_set prob x ;
       Stub.svm_problem_y_set prob y;
-      { n_samples;
-        n_feats = !n_feats;
+      { n_samples ;
+        n_feats = 0 ;
         prob;
       }
 

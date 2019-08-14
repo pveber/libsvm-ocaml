@@ -31,6 +31,10 @@ module Svm : sig
 
   (** {2 SVM problem and model} *)
 
+  val load_dataset :
+    string ->
+    (int * float) list array * vec
+
   module Problem : sig
     type t (** Type of a SVM problem (training set). *)
 
