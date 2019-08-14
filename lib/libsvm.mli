@@ -225,25 +225,25 @@ module Svm : sig
      estimates. *)
   val predict_probability_sparse : Model.t -> (int * float) list -> float * float array
 
-  (* (\** [predict_one model x] does classification or regression on a test vector *)
-  (*     [x] given a [model]. *)
-  (*     For a classification model, the predicted class for [x] is returned. *)
-  (*     For a regression model, the function value of [x] is returned. *)
-  (*     For a one-class model, +1 or -1 is returned. *\) *)
-  (* val predict_one : Model.t -> x:vec -> float *)
+  (** [predict_one model x] does classification or regression on a test vector
+      [x] given a [model].
+      For a classification model, the predicted class for [x] is returned.
+      For a regression model, the function value of [x] is returned.
+      For a one-class model, +1 or -1 is returned. *)
+  val predict_one : Model.t -> vec -> float
 
-  (* (\** [predict model x] applies predict_one to each row of the matrix [x]. *\) *)
-  (* val predict : Model.t -> x:mat -> vec *)
+  (** [predict model x] applies predict_one to each row of the matrix [x]. *)
+  val predict : Model.t -> mat -> vec
 
-  (* (\** [predict_values model x] @return a matrix with decision values on a test *)
-  (*     vector [x]. *\) *)
-  (* val predict_values : Model.t -> x:vec -> float array array *)
+  (** [predict_values model x] @return a matrix with decision values on a test
+      vector [x]. *)
+  val predict_values : Model.t -> vec -> float array array
 
-  (* (\** [predict_probability m x] does classification or regression on a test *)
-  (*     vector [x] based on a [model] with probability information. *)
-  (*     @raise Invalid_argument if the model does not support probability *)
-  (*     estimates. *\) *)
-  (* val predict_probability : Model.t -> x:vec -> float * float array *)
+  (** [predict_probability m x] does classification or regression on a test
+      vector [x] based on a [model] with probability information.
+      @raise Invalid_argument if the model does not support probability
+      estimates. *)
+  val predict_probability : Model.t -> vec -> float * float array
 
   (* (\** [predict_from_file model filename] does classification or regression *)
   (*     on the testing data given in [filename]. *)

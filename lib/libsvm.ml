@@ -121,6 +121,13 @@ module Svm = struct
       model -> (int * float) list -> float = "svm_predict_sparse"
     external svm_predict_probability_sparse :
       model -> (int * float) list -> float * float array = "svm_predict_probability_sparse"
+
+    external svm_predict_one :
+      model -> vec -> float = "svm_predict_dense"
+    external svm_predict_values :
+      model -> vec -> float array = "svm_predict_values"
+    external svm_predict_probability :
+      model -> vec -> float * float array = "svm_predict_probability_sparse"
   end
 
   let count_lines file =
@@ -365,8 +372,8 @@ module Svm = struct
 
   let predict_sparse = Stub.svm_predict_sparse
 
-  let predict_values_sparse model x =
-    let dec_vals = Stub.svm_predict_values_sparse model x in
+  let predict_values_gen pred model x =
+    let dec_vals = pred model x in
     match Stub.svm_get_svm_type model with
     | EPSILON_SVR | NU_SVR | ONE_CLASS ->
       Array.make_matrix ~dimx:1 ~dimy:1 dec_vals.(0)
@@ -383,7 +390,10 @@ module Svm = struct
       done;
       dec_mat
 
-  let predict_probability_sparse model x =
+  let predict_values_sparse = predict_values_gen Stub.svm_predict_values_sparse
+  let predict_values = predict_values_gen Stub.svm_predict_values
+
+  let predict_probability_gen pred model x =
     match Stub.svm_get_svm_type model with
     | EPSILON_SVR | NU_SVR ->
       invalid_arg "For probability estimates call Model.get_svr_probability."
@@ -391,35 +401,24 @@ module Svm = struct
       invalid_arg "One-class problems do not support probability estimates."
     | C_SVC | NU_SVC ->
       if Stub.svm_check_probability_model model then
-        Stub.svm_predict_probability_sparse model x
+        pred model x
       else
         invalid_arg "Model does not support probability estimates."
 
-  (* let predict model ~x =
-   *   let n = Mat.dim1 x in
-   *   let y = Vec.create n in
-   *   let x' = Mat.transpose_copy x in
-   *   for i = 1 to n do
-   *     y.{i} <- predict_one model ~x:(Mat.col x' i)
-   *   done;
-   *   y *)
+  let predict_probability_sparse = predict_probability_gen Stub.svm_predict_probability_sparse
+  let predict_probability = predict_probability_gen Stub.svm_predict_probability
 
+  let predict_one model x =
+    Stub.svm_predict_one model x
 
-  (* let predict_probability model ~x = *)
-  (*   match Stub.svm_get_svm_type model with *)
-  (*   | EPSILON_SVR | NU_SVR -> *)
-  (*     invalid_arg "For probability estimates call Model.get_svr_probability." *)
-  (*   | ONE_CLASS -> *)
-  (*     invalid_arg "One-class problems do not support probability estimates." *)
-  (*   | C_SVC | NU_SVC -> *)
-  (*     if Stub.svm_check_probability_model model then *)
-  (*       let nodes = match Stub.svm_get_kernel_type model with *)
-  (*         | PRECOMPUTED -> svm_node_array_of_vec x *)
-  (*         | _ -> sparse_svm_node_array_of_vec x *)
-  (*       in *)
-  (*       Stub.svm_predict_probability model nodes *)
-  (*     else *)
-  (*       invalid_arg "Model does not support probability estimates." *)
+  let predict model x =
+    let n = Mat.dim1 x in
+    let y = Vec.create n in
+    let x' = Mat.transpose_copy x in
+    for i = 1 to n do
+      y.{i} <- predict_one model (Mat.col x' i)
+    done;
+    y
 
   (* let predict_from_file model file = *)
   (*   let n_samples = count_lines file in *)

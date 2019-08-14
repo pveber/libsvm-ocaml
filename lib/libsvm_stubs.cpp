@@ -120,6 +120,30 @@ CAMLprim value svm_problem_y_get_stub(value v_prob, value v_idx)
   CAMLreturn(caml_copy_double(prob->y[i]));
 }
 
+/* not meant to be called from ocaml */
+svm_node** create_svm_nodes_of_bigarray(value v_x) {
+  int m = Caml_ba_array_val(v_x)->dim[0];
+  int n = Caml_ba_array_val(v_x)->dim[1];
+  double* data = (double*) Caml_ba_data_val(v_x);
+
+  svm_node** dst = (svm_node **) malloc(sizeof(svm_node*) * m);
+  svm_node* buf = (svm_node*) malloc(sizeof(svm_node) * m * (n + 1));
+  dst[0] = buf;
+  for(int i = 1; i < m; i++)
+    dst[i] = dst[i - 1] + n + 1;
+
+  int k = 0;
+  for(int j = 0; j < n; j++)
+    for(int i = 0; i < m; i++, k++) {
+      svm_node* n = dst[i] + j;
+      n->index = j;
+      n->value = data[k];
+    }
+  for(int i = 0; i < m; i++)
+    dst[i][n].index = -1;
+  return dst;
+}
+
 CAMLprim value svm_problem_x_dense_set_stub(value v_prob, value v_x)
 {
   CAMLparam2(v_prob, v_x);
@@ -127,26 +151,7 @@ CAMLprim value svm_problem_x_dense_set_stub(value v_prob, value v_x)
   assert(Caml_ba_array_val(v_x)->num_dims == 2);
   assert(Caml_ba_array_val(v_x)->flags & CAML_BA_FLOAT64);
 
-  int m = Caml_ba_array_val(v_x)->dim[0];
-  int n = Caml_ba_array_val(v_x)->dim[1];
-  double* data = (double*) Caml_ba_data_val(v_x);
-
-  prob->x = (svm_node **) malloc(sizeof(svm_node*) * m);
-  svm_node* buf = (svm_node*) malloc(sizeof(svm_node) * m * (n + 1));
-  prob->x[0] = buf;
-  for(int i = 1; i < m; i++)
-    prob->x[i] = prob->x[i - 1] + n + 1;
-
-  int k = 0;
-  for(int j = 0; j < n; j++)
-    for(int i = 0; i < m; i++, k++) {
-      svm_node* n = prob->x[i] + j;
-      n->index = j;
-      n->value = data[k];
-    }
-  for(int i = 0; i < m; i++)
-    prob->x[i][n].index = -1;
-
+  prob->x = create_svm_nodes_of_bigarray(v_x);
   CAMLreturn(Val_unit);
 }
 
@@ -511,6 +516,7 @@ CAMLprim value svm_get_svr_probability_stub(value v_model)
   CAMLreturn(v_res);
 }
 
+/* not meant to be called from ocaml */
 svm_node* create_feature_vector_sparse(value v_l) {
   int n = svm_list_length(v_l);
   svm_node* dst = (svm_node*) malloc(sizeof(svm_node) * (n + 1));
@@ -579,6 +585,82 @@ CAMLprim value svm_predict_probability_sparse(value v_model, value v_list)
 
   svm_node* x = create_feature_vector_sparse(v_list);
   label = svm_predict_probability(Svm_model_val(v_model), x, estimates);
+  free(x);
+
+  v_result = caml_alloc(2, 0);
+  v_label = caml_copy_double(label);
+
+  v_estimates = caml_alloc(nr_class * Double_wosize, Double_array_tag);
+  for (i = 0; i < nr_class; i++)
+  {
+    Store_double_field(v_estimates, i, estimates[i]);
+  }
+
+  Store_field(v_result, 0, v_label);
+  Store_field(v_result, 1, v_estimates);
+
+  caml_stat_free(estimates);
+  CAMLreturn(v_result);
+}
+
+
+CAMLprim value svm_predict_dense(value v_model, value v_x)
+{
+  CAMLparam2(v_model, v_x);
+  CAMLlocal1(v_label);
+  double label;
+
+  svm_node** x = create_svm_nodes_of_bigarray(v_x);
+  label = svm_predict(Svm_model_val(v_model), x[0]);
+  v_label = caml_copy_double(label);
+  free(x[0]);
+  free(x);
+
+  CAMLreturn(v_label);
+}
+
+CAMLprim value svm_predict_values_dense(value v_model, value v_x)
+{
+  CAMLparam2(v_model, v_x);
+  CAMLlocal1(v_decvals);
+
+  int nr_class, nr_decvals, i;
+  double *decvals;
+
+  nr_class = svm_get_nr_class(Svm_model_val(v_model));
+  nr_decvals = (nr_class*(nr_class-1))/2;
+  decvals = Caml_stat_alloc(double, nr_decvals);
+
+  svm_node** x = create_svm_nodes_of_bigarray(v_x);
+  svm_predict_values(Svm_model_val(v_model), x[0], decvals);
+  free(x[0]);
+  free(x);
+
+  v_decvals = caml_alloc(nr_class * Double_wosize, Double_array_tag);
+  for (i = 0; i < nr_class; i++)
+  {
+    Store_double_field(v_decvals, i, decvals[i]);
+  }
+
+  free(x);
+  caml_stat_free(decvals);
+  CAMLreturn(v_decvals);
+}
+
+CAMLprim value svm_predict_probability_dense(value v_model, value v_x)
+{
+  CAMLparam2(v_model, v_x);
+  CAMLlocal3(v_label, v_estimates, v_result);
+
+  int nr_class, i;
+  double label, *estimates;
+
+  nr_class = svm_get_nr_class(Svm_model_val(v_model));
+  estimates = Caml_stat_alloc(double, nr_class);
+
+  svm_node** x = create_svm_nodes_of_bigarray(v_x);
+  label = svm_predict_probability(Svm_model_val(v_model), x[0], estimates);
+  free(x[0]);
   free(x);
 
   v_result = caml_alloc(2, 0);
