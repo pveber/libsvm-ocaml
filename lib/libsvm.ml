@@ -420,23 +420,22 @@ module Svm = struct
     done;
     y
 
-  (* let predict_from_file model file = *)
-  (*   let n_samples = count_lines file in *)
-  (*   let expected = Vec.create n_samples in *)
-  (*   let predicted = Vec.create n_samples in *)
-  (*   In_channel.with_file file ~f:(fun ic -> *)
-  (*     let parse_line = Staged.unstage (parse_line file) in *)
-  (*     let rec loop i = *)
-  (*       match In_channel.input_line ic with *)
-  (*       | None -> (`Expected expected, `Predicted predicted) *)
-  (*       | Some line -> *)
-  (*         let target, feats = parse_line line ~pos:i in *)
-  (*         expected.{i} <- target; *)
-  (*         let nodes = svm_node_array_of_list feats ~len:(List.length feats) in *)
-  (*         predicted.{i} <- Stub.svm_predict model nodes; *)
-  (*         loop (i+1) *)
-  (*     in *)
-  (*     loop 1) *)
+  let predict_from_file model file =
+    let n_samples = count_lines file in
+    let expected = Vec.create n_samples in
+    let predicted = Vec.create n_samples in
+    In_channel.with_file file ~f:(fun ic ->
+      let parse_line = Staged.unstage (parse_line file) in
+      let rec loop i =
+        match In_channel.input_line ic with
+        | None -> (`Expected expected, `Predicted predicted)
+        | Some line ->
+          let target, feats = parse_line line ~pos:i in
+          expected.{i} <- target;
+          predicted.{i} <- Stub.svm_predict_sparse model feats;
+          loop (i+1)
+      in
+      loop 1)
 end
 
 module Stats = struct

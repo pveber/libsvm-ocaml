@@ -245,15 +245,15 @@ module Svm : sig
       estimates. *)
   val predict_probability : Model.t -> vec -> float * float array
 
-  (* (\** [predict_from_file model filename] does classification or regression *)
-  (*     on the testing data given in [filename]. *)
-  (*     @return a pair vectors containing the expected (true) values form the *)
-  (*     test file and the predicted ones computed from the given [model]. *)
-  (*     @raise Failure if an error occured during parsing of [filename]. *\) *)
-  (* val predict_from_file : *)
-  (*   Model.t *)
-  (*   -> string *)
-  (*   -> ([ `Expected of vec ] * [ `Predicted of vec ]) *)
+  (** [predict_from_file model filename] does classification or regression
+      on the testing data given in [filename].
+      @return a pair vectors containing the expected (true) values form the
+      test file and the predicted ones computed from the given [model].
+      @raise Failure if an error occured during parsing of [filename]. *)
+  val predict_from_file :
+    Model.t
+    -> string
+    -> ([ `Expected of vec ] * [ `Predicted of vec ])
 end
 
 module Stats : sig
