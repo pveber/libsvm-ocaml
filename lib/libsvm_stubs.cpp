@@ -464,14 +464,6 @@ CAMLprim value svm_get_svm_type_stub(value v_model)
   CAMLreturn(v_type);
 }
 
-CAMLprim value svm_get_kernel_type_stub(value v_model)
-{
-  CAMLparam1(v_model);
-  CAMLlocal1(v_kernel);
-  v_kernel = Val_long(Svm_model_val(v_model)->param.kernel_type);
-  CAMLreturn(v_kernel);
-}
-
 CAMLprim value svm_get_nr_class_stub(value v_model)
 {
   CAMLparam1(v_model);

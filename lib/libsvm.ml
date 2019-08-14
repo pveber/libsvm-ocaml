@@ -28,15 +28,6 @@ open Stdio
 open Lacaml.D
 open Printf
 
-(* base doesn't include this stuff as opposed to core. It's small enough that we
-   can just include it *)
-(* module Float = struct *)
-(*   include Float *)
-(*   let robust_comparison_tolerance = 1E-7 *)
-(*   (\* let ( >=. ) x y = x >= y - robust_comparison_tolerance *\) *)
-(*   (\* let ( =. ) x y = x >=. y && y >=. x *\) *)
-(* end *)
-
 module Svm = struct
   type problem
   type params
@@ -106,7 +97,6 @@ module Svm = struct
     external svm_load_model : string -> model = "svm_load_model_stub"
 
     external svm_get_svm_type : model -> svm_type = "svm_get_svm_type_stub"
-    (* external svm_get_kernel_type : model -> kernel_type = "svm_get_kernel_type_stub" *)
     external svm_get_nr_class : model -> int = "svm_get_nr_class_stub"
     external svm_get_labels : model -> int list = "svm_get_labels_stub"
     external svm_get_nr_sv : model -> int = "svm_get_nr_sv_stub"
