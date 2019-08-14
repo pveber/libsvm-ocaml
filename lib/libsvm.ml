@@ -112,14 +112,14 @@ module Svm = struct
     external svm_get_nr_sv : model -> int = "svm_get_nr_sv_stub"
     external svm_get_svr_probability :
       model -> float = "svm_get_svr_probability_stub"
-    (* external svm_check_probability_model : *)
-    (*   model -> bool = "svm_check_probability_model_stub" *)
+    external svm_check_probability_model :
+      model -> bool = "svm_check_probability_model_stub"
 
     external svm_predict_values_sparse :
       model -> (int * float) list -> float array = "svm_predict_values_sparse"
     external svm_predict_sparse :
       model -> (int * float) list -> float = "svm_predict_sparse"
-    external svm_predict_probability :
+    external svm_predict_probability_sparse :
       model -> (int * float) list -> float * float array = "svm_predict_probability_sparse"
   end
 
@@ -363,10 +363,9 @@ module Svm = struct
     if not verbose then Stub.svm_set_quiet_mode () else ();
     Stub.svm_cross_validation problem.Problem.prob params n_folds
 
-  let predict_sparse model ~x =
-    Stub.svm_predict_sparse model x
+  let predict_sparse = Stub.svm_predict_sparse
 
-  let predict_values_sparse model ~x =
+  let predict_values_sparse model x =
     let dec_vals = Stub.svm_predict_values_sparse model x in
     match Stub.svm_get_svm_type model with
     | EPSILON_SVR | NU_SVR | ONE_CLASS ->
@@ -383,7 +382,19 @@ module Svm = struct
         done
       done;
       dec_mat
-  
+
+  let predict_probability_sparse model x =
+    match Stub.svm_get_svm_type model with
+    | EPSILON_SVR | NU_SVR ->
+      invalid_arg "For probability estimates call Model.get_svr_probability."
+    | ONE_CLASS ->
+      invalid_arg "One-class problems do not support probability estimates."
+    | C_SVC | NU_SVC ->
+      if Stub.svm_check_probability_model model then
+        Stub.svm_predict_probability_sparse model x
+      else
+        invalid_arg "Model does not support probability estimates."
+
   (* let predict model ~x =
    *   let n = Mat.dim1 x in
    *   let y = Vec.create n in

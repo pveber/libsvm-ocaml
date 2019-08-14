@@ -208,6 +208,23 @@ module Svm : sig
 
   (** {2 SVM prediction} *)
 
+  (** [predict_sparse model ~x] does classification or regression on a
+     test vector [x] given a [model].  For a classification model, the
+     predicted class for [x] is returned.  For a regression model, the
+     function value of [x] is returned.  For a one-class model, +1 or
+     -1 is returned. *)
+  val predict_sparse : Model.t -> (int * float) list -> float
+
+  (** [predict_values_sparse model x] @return a matrix with decision values on a test
+      vector [x]. *)
+  val predict_values_sparse : Model.t -> (int * float) list -> float array array
+
+  (** [predict_probability m x] does classification or regression on a
+     test vector [x] based on a [model] with probability information.
+     @raise Invalid_argument if the model does not support probability
+     estimates. *)
+  val predict_probability_sparse : Model.t -> (int * float) list -> float * float array
+
   (* (\** [predict_one model x] does classification or regression on a test vector *)
   (*     [x] given a [model]. *)
   (*     For a classification model, the predicted class for [x] is returned. *)
