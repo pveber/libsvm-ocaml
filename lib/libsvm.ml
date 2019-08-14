@@ -115,12 +115,12 @@ module Svm = struct
     (* external svm_check_probability_model : *)
     (*   model -> bool = "svm_check_probability_model_stub" *)
 
-    (* external svm_predict_values : *)
-    (*   model -> svm_node_array -> float array = "svm_predict_values_stub" *)
-    (* external svm_predict : *)
-    (*   model -> svm_node_array -> float = "svm_predict_stub" *)
-    (* external svm_predict_probability : *)
-    (*   model -> svm_node_array -> float * float array = "svm_predict_probability_stub" *)
+    external svm_predict_values_sparse :
+      model -> (int * float) list -> float array = "svm_predict_values_sparse"
+    external svm_predict_sparse :
+      model -> (int * float) list -> float = "svm_predict_sparse"
+    external svm_predict_probability :
+      model -> (int * float) list -> float * float array = "svm_predict_probability_sparse"
   end
 
   let count_lines file =
@@ -363,43 +363,36 @@ module Svm = struct
     if not verbose then Stub.svm_set_quiet_mode () else ();
     Stub.svm_cross_validation problem.Problem.prob params n_folds
 
-  (* let predict_one model ~x = *)
-  (*   let nodes = match Stub.svm_get_kernel_type model with *)
-  (*     | PRECOMPUTED -> svm_node_array_of_vec x *)
-  (*     | _ -> sparse_svm_node_array_of_vec x *)
-  (*   in *)
-  (*   Stub.svm_predict model nodes *)
+  let predict_sparse model ~x =
+    Stub.svm_predict_sparse model x
 
-  (* let predict model ~x = *)
-  (*   let n = Mat.dim1 x in *)
-  (*   let y = Vec.create n in *)
-  (*   let x' = Mat.transpose_copy x in *)
-  (*   for i = 1 to n do *)
-  (*     y.{i} <- predict_one model ~x:(Mat.col x' i) *)
-  (*   done; *)
-  (*   y *)
+  let predict_values_sparse model ~x =
+    let dec_vals = Stub.svm_predict_values_sparse model x in
+    match Stub.svm_get_svm_type model with
+    | EPSILON_SVR | NU_SVR | ONE_CLASS ->
+      Array.make_matrix ~dimx:1 ~dimy:1 dec_vals.(0)
+    | C_SVC | NU_SVC ->
+      let n_classes = Stub.svm_get_nr_class model in
+      let dec_mat = Array.make_matrix ~dimx:n_classes ~dimy:n_classes 0. in
+      let count = ref 0 in
+      for i = 0 to n_classes-1 do
+        for j = i+1 to n_classes-1 do
+          dec_mat.(i).(j) <-    dec_vals.(!count) ;
+          dec_mat.(j).(i) <- -. dec_vals.(!count) ;
+          Caml.incr count
+        done
+      done;
+      dec_mat
+  
+  (* let predict model ~x =
+   *   let n = Mat.dim1 x in
+   *   let y = Vec.create n in
+   *   let x' = Mat.transpose_copy x in
+   *   for i = 1 to n do
+   *     y.{i} <- predict_one model ~x:(Mat.col x' i)
+   *   done;
+   *   y *)
 
-  (* let predict_values model ~x = *)
-  (*   let nodes = match Stub.svm_get_kernel_type model with *)
-  (*     | PRECOMPUTED -> svm_node_array_of_vec x *)
-  (*     | _ -> sparse_svm_node_array_of_vec x *)
-  (*   in *)
-  (*   let dec_vals = Stub.svm_predict_values model nodes in *)
-  (*   match Stub.svm_get_svm_type model with *)
-  (*   | EPSILON_SVR | NU_SVR | ONE_CLASS -> *)
-  (*     Array.make_matrix ~dimx:1 ~dimy:1 dec_vals.(0) *)
-  (*   | C_SVC | NU_SVC -> *)
-  (*     let n_classes = Stub.svm_get_nr_class model in *)
-  (*     let dec_mat = Array.make_matrix ~dimx:n_classes ~dimy:n_classes 0. in *)
-  (*     let count = ref 0 in *)
-  (*     for i = 0 to n_classes-1 do *)
-  (*       for j = i+1 to n_classes-1 do *)
-  (*         dec_mat.(i).(j) <-    dec_vals.(!count) ; *)
-  (*         dec_mat.(j).(i) <- -. dec_vals.(!count) ; *)
-  (*         Caml.incr count *)
-  (*       done *)
-  (*     done; *)
-  (*     dec_mat *)
 
   (* let predict_probability model ~x = *)
   (*   match Stub.svm_get_svm_type model with *)

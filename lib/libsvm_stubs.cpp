@@ -150,6 +150,28 @@ CAMLprim value svm_problem_x_dense_set_stub(value v_prob, value v_x)
   CAMLreturn(Val_unit);
 }
 
+/* not meant to be called from ocaml */
+void copy_sparse_feature_vector(value src, svm_node* dst) {
+  int j = 0;
+  for(value v = src;
+      v != Val_emptylist;
+      j++, v = Field(v, 1)) {
+    svm_node* n = dst + j;
+    value pair = Field(v, 0);
+    n->index = Int_val(Field(pair, 0));
+    n->value = Double_val(Field(pair, 1));
+  }
+  dst[j].index = -1;
+}
+
+int svm_list_length(value l) {
+  int c = 0;
+  for(value v = l; v != Val_emptylist; ) {
+    c++;
+    v = Field(v, 1);
+  }
+  return c;
+}
 
 CAMLprim value svm_problem_x_sparse_set_stub(value v_prob, value v_x)
 {
@@ -160,11 +182,9 @@ CAMLprim value svm_problem_x_sparse_set_stub(value v_prob, value v_x)
   int* nz = (int*) calloc(m, sizeof(int));
   int nz_total = 0;
   for(int i = 0; i < m; i++) {
-    for(value v = Field(v_x, i); v != Val_emptylist; ) {
-      nz[i]++;
-      nz_total++;
-      v = Field(v, 1);
-    }
+    int l = svm_list_length(Field(v_x, i));
+    nz[i] += l;
+    nz_total += l;
   }
   prob->x = (svm_node **) malloc(sizeof(svm_node*) * m);
   svm_node* buf = (svm_node*) malloc(sizeof(svm_node) * (nz_total + m));
@@ -172,18 +192,8 @@ CAMLprim value svm_problem_x_sparse_set_stub(value v_prob, value v_x)
   for(int i = 1; i < m; i++)
     prob->x[i] = prob->x[i - 1] + nz[i-1] + 1;
 
-  for(int i = 0; i < m; i++) {
-    int j = 0;
-    for(value v = Field(v_x, i);
-	v != Val_emptylist;
-	j++, v = Field(v, 1)) {
-      svm_node* n = prob->x[i] + j;
-      value pair = Field(v, 0);
-      n->index = Int_val(Field(pair, 0));
-      n->value = Double_val(Field(pair, 1));
-    }
-    prob->x[i][j].index = -1;
-  }
+  for(int i = 0; i < m; i++)
+    copy_sparse_feature_vector(Field(v_x, i), prob->x[i]);
 
   free(nz);
   CAMLreturn(Val_unit);
@@ -501,42 +511,52 @@ CAMLprim value svm_get_svr_probability_stub(value v_model)
   CAMLreturn(v_res);
 }
 
-// CAMLprim value svm_predict_values_stub(value v_model, value v_array)
-// {
-//   CAMLparam2(v_model, v_array);
-//   CAMLlocal1(v_decvals);
+svm_node* create_feature_vector_sparse(value v_l) {
+  int n = svm_list_length(v_l);
+  svm_node* dst = (svm_node*) malloc(sizeof(svm_node) * (n + 1));
+  copy_sparse_feature_vector(v_l, dst);
+  return dst;
+}
 
-//   int nr_class, nr_decvals, i;
-//   double *decvals;
+CAMLprim value svm_predict_values_sparse(value v_model, value v_x)
+{
+  CAMLparam2(v_model, v_x);
+  CAMLlocal1(v_decvals);
 
-//   nr_class = svm_get_nr_class(Svm_model_val(v_model));
-//   nr_decvals = (nr_class*(nr_class-1))/2;
-//   decvals = Caml_stat_alloc(double, nr_decvals);
+  int nr_class, nr_decvals, i;
+  double *decvals;
 
-//   svm_predict_values(Svm_model_val(v_model),
-//                      Svm_node_array_val(v_array), decvals);
+  nr_class = svm_get_nr_class(Svm_model_val(v_model));
+  nr_decvals = (nr_class*(nr_class-1))/2;
+  decvals = Caml_stat_alloc(double, nr_decvals);
 
-//   v_decvals = caml_alloc(nr_class * Double_wosize, Double_array_tag);
-//   for (i = 0; i < nr_class; i++)
-//   {
-//     Store_double_field(v_decvals, i, decvals[i]);
-//   }
+  svm_node* x = create_feature_vector_sparse(v_x);
+  svm_predict_values(Svm_model_val(v_model), x, decvals);
 
-//   caml_stat_free(decvals);
-//   CAMLreturn(v_decvals);
-// }
+  v_decvals = caml_alloc(nr_class * Double_wosize, Double_array_tag);
+  for (i = 0; i < nr_class; i++)
+  {
+    Store_double_field(v_decvals, i, decvals[i]);
+  }
 
-// CAMLprim value svm_predict_stub(value v_model, value v_array)
-// {
-//   CAMLparam2(v_model, v_array);
-//   CAMLlocal1(v_label);
-//   double label;
+  free(x);
+  caml_stat_free(decvals);
+  CAMLreturn(v_decvals);
+}
 
-//   label = svm_predict(Svm_model_val(v_model), Svm_node_array_val(v_array));
-//   v_label = caml_copy_double(label);
+CAMLprim value svm_predict_sparse(value v_model, value v_list)
+{
+  CAMLparam2(v_model, v_list);
+  CAMLlocal1(v_label);
+  double label;
 
-//   CAMLreturn(v_label);
-// }
+  svm_node* x = create_feature_vector_sparse(v_list);
+  label = svm_predict(Svm_model_val(v_model), x);
+  v_label = caml_copy_double(label);
+  free(x);
+
+  CAMLreturn(v_label);
+}
 
 CAMLprim value svm_check_probability_model_stub(value v_model)
 {
@@ -546,35 +566,35 @@ CAMLprim value svm_check_probability_model_stub(value v_model)
   CAMLreturn(v_res);
 }
 
-// CAMLprim value svm_predict_probability_stub(value v_model, value v_array)
-// {
-//   CAMLparam2(v_model, v_array);
-//   CAMLlocal3(v_label, v_estimates, v_result);
+CAMLprim value svm_predict_probability_sparse(value v_model, value v_list)
+{
+  CAMLparam2(v_model, v_list);
+  CAMLlocal3(v_label, v_estimates, v_result);
 
-//   int nr_class, i;
-//   double label, *estimates;
+  int nr_class, i;
+  double label, *estimates;
 
-//   nr_class = svm_get_nr_class(Svm_model_val(v_model));
-//   estimates = Caml_stat_alloc(double, nr_class);
+  nr_class = svm_get_nr_class(Svm_model_val(v_model));
+  estimates = Caml_stat_alloc(double, nr_class);
 
-//   label = svm_predict_probability(Svm_model_val(v_model),
-//                                   Svm_node_array_val(v_array),
-//                                   estimates);
+  svm_node* x = create_feature_vector_sparse(v_list);
+  label = svm_predict_probability(Svm_model_val(v_model), x, estimates);
+  free(x);
 
-//   v_result = caml_alloc(2, 0);
-//   v_label = caml_copy_double(label);
+  v_result = caml_alloc(2, 0);
+  v_label = caml_copy_double(label);
 
-//   v_estimates = caml_alloc(nr_class * Double_wosize, Double_array_tag);
-//   for (i = 0; i < nr_class; i++)
-//   {
-//     Store_double_field(v_estimates, i, estimates[i]);
-//   }
+  v_estimates = caml_alloc(nr_class * Double_wosize, Double_array_tag);
+  for (i = 0; i < nr_class; i++)
+  {
+    Store_double_field(v_estimates, i, estimates[i]);
+  }
 
-//   Store_field(v_result, 0, v_label);
-//   Store_field(v_result, 1, v_estimates);
+  Store_field(v_result, 0, v_label);
+  Store_field(v_result, 1, v_estimates);
 
-//   caml_stat_free(estimates);
-//   CAMLreturn(v_result);
-// }
+  caml_stat_free(estimates);
+  CAMLreturn(v_result);
+}
 
 }
