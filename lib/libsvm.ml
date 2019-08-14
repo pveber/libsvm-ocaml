@@ -124,7 +124,7 @@ module Svm = struct
     In_channel.with_file file ~f:(fun ic ->
       In_channel.fold_lines ic ~init:0 ~f:(fun count _line -> count + 1))
 
-  let parse_line file = Staged.stage (fun line ~pos ->
+  let parse_line file line ~pos =
     let result = Result.try_with (fun () ->
       match String.rstrip line |> String.split ~on:' ' with
       | [] -> assert false
@@ -139,7 +139,7 @@ module Svm = struct
     match result with
     | Ok x -> x
     | Error exn ->
-      failwithf "%s: wrong input format at line %d: %s" file (pos + 1) (Exn.to_string exn) ())
+      failwithf "%s: wrong input format at line %d: %s" file (pos + 1) (Exn.to_string exn) ()
 
   module Problem = struct
     type t = {
@@ -179,17 +179,18 @@ module Svm = struct
       let x = Array.create ~len:n_samples [] in
       let y = Vec.create n_samples in
       In_channel.with_file file ~f:(fun ic ->
-        let parse_line = Staged.unstage (parse_line file) in
+        let parse_line = parse_line file in
         let rec loop i =
           match In_channel.input_line ic with
           | None -> ()
           | Some line ->
             let target, feats = parse_line line ~pos:i in
-            y.{i} <- target ;
+            y.{i + 1} <- target ;
             x.(i) <- feats ;
             loop (i+1)
         in
-        loop 1);
+        loop 0
+      ) ;
       let prob = Stub.svm_problem_create () in
       Stub.svm_problem_l_set prob n_samples;
       Stub.svm_problem_x_sparse_set prob x ;
@@ -415,7 +416,7 @@ module Svm = struct
     let expected = Vec.create n_samples in
     let predicted = Vec.create n_samples in
     In_channel.with_file file ~f:(fun ic ->
-      let parse_line = Staged.unstage (parse_line file) in
+      let parse_line = parse_line file in
       let rec loop i =
         match In_channel.input_line ic with
         | None -> (`Expected expected, `Predicted predicted)
