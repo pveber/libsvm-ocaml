@@ -172,7 +172,7 @@ module Svm = struct
 
     let create ~x ~y =
       if Array.is_empty x then raise (invalid_arg "empty training set") ;
-      let n_feats = Array.fold x ~init:Int.min_value ~f:(fun acc x -> Int.max acc (List.length x)) in
+      let n_feats = Array.fold x ~init:0 ~f:(fun acc x -> Int.max acc (List.length x)) in
       let n_samples = Array.length x in
       let prob = Stub.svm_problem_create () in
       Stub.svm_problem_l_set prob n_samples;
@@ -195,12 +195,13 @@ module Svm = struct
     let load file =
       let x, y = load_dataset file in
       let n_samples = Array.length x in
+      let n_feats = Array.fold x ~init:0 ~f:(fun acc x -> Int.max acc (List.length x)) in
       let prob = Stub.svm_problem_create () in
       Stub.svm_problem_l_set prob n_samples;
       Stub.svm_problem_x_sparse_set prob x ;
       Stub.svm_problem_y_set prob y;
       { n_samples ;
-        n_feats = 0 ;
+        n_feats ;
         prob;
       }
 
