@@ -634,7 +634,6 @@ CAMLprim value svm_predict_values_dense(value v_model, value v_x)
     Store_double_field(v_decvals, i, decvals[i]);
   }
 
-  free(x);
   caml_stat_free(decvals);
   CAMLreturn(v_decvals);
 }

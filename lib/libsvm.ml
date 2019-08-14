@@ -115,9 +115,9 @@ module Svm = struct
     external svm_predict_one :
       model -> vec -> float = "svm_predict_dense"
     external svm_predict_values :
-      model -> vec -> float array = "svm_predict_values"
+      model -> vec -> float array = "svm_predict_values_dense"
     external svm_predict_probability :
-      model -> vec -> float * float array = "svm_predict_probability_sparse"
+      model -> vec -> float * float array = "svm_predict_probability_dense"
   end
 
   let count_lines file =
