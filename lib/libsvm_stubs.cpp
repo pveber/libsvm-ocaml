@@ -233,7 +233,7 @@ CAMLprim value svm_problem_scale(value v_prob, value v_lower, value v_upper) {
   svm_node **x = Svm_problem_val(v_prob)->x;
   int l = Svm_problem_val(v_prob)->l;
   int min_index = INT_MAX;
-  int max_index = INT_MIN;
+  int max_index = 0;
   double lower = Double_val(v_lower);
   double upper = Double_val(v_upper);
 
@@ -244,9 +244,9 @@ CAMLprim value svm_problem_scale(value v_prob, value v_lower, value v_upper) {
       min_index = min(min_index, index);
       max_index = max(max_index, index);
     }
-  //  assert((max_index + 1) * sizeof(double) == 40);
-  double* feature_max = (double*) malloc((max_index + 1) * sizeof(double));
-  double* feature_min = (double*) malloc((max_index + 1) * sizeof(double));
+  assert(max_index >= 0);
+  double* feature_max = (double*) malloc(((size_t) max_index + 1) * sizeof(double));
+  double* feature_min = (double*) malloc(((size_t) max_index + 1) * sizeof(double));
   for(int i = 0; i <= max_index; i++) {
     feature_min[i] =   DBL_MAX;
     feature_max[i] = - DBL_MAX;
