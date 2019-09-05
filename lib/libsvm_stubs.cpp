@@ -25,6 +25,8 @@
 extern "C" {
 #include <stdio.h>
 #include <string.h>
+#include <climits>
+#include <cfloat>
 
 #include <caml/mlvalues.h>
 #include <caml/custom.h>
@@ -34,23 +36,22 @@ extern "C" {
 #include <caml/signals.h>
 #include <caml/bigarray.h>
 
+    #include <cassert>
 #include "svm.h"
+
+#define max(x,y) (((x)>(y))?(x):(y))
+#define min(x,y) (((x)<(y))?(x):(y))
 
 /* Type definitions */
 
-typedef struct svm_node svm_node;
 typedef struct svm_problem svm_prob;
 typedef struct svm_parameter svm_param;
 typedef struct svm_model svm_model;
-typedef svm_node *svm_node_matrix;
 
 #define Caml_stat_alloc(type,n) (type *)caml_stat_alloc((n)*sizeof(type))
 
 /* Macros to access the wrapper structures stored in the custom blocks */
 
-#define Svm_node_matrix_val(x) ((*(svm_node_matrix **) (Data_custom_val(x))))
-#define Svm_node_array_val(x) ((*(svm_node **) (Data_custom_val(x))))
-#define Double_array_val(x) ((*(double **) (Data_custom_val(x))))
 #define Svm_problem_val(x) ((*(svm_prob **) (Data_custom_val(x))))
 #define Svm_param_val(x) ((*(svm_param **) (Data_custom_val(x))))
 #define Svm_model_val(x) ((*(svm_model **) (Data_custom_val(x))))
@@ -68,130 +69,20 @@ CAMLprim value svm_set_quiet_mode_stub(value unit)
 
 /* SVM Problem */
 
-void finalize_node_array_gc(value v_array)
-{
-  svm_node *array =  Svm_node_array_val(v_array);
-  caml_stat_free(array);
-}
-
-static inline value alloc_node_array(int len)
-{
-  svm_node *array = Caml_stat_alloc(svm_node,len);
-  value v_array = caml_alloc_final(2, finalize_node_array_gc, 0, 1);
-  Svm_node_array_val(v_array) = array;
-  return v_array;
-}
-
-CAMLprim value svm_node_array_create_stub(value v_size)
-{
-  CAMLparam1(v_size);
-  CAMLlocal1(v_array);
-  v_array = alloc_node_array(Int_val(v_size));
-  CAMLreturn(v_array);
-}
-
-CAMLprim value svm_node_array_set_stub(value v_array, value v_pos,
-                                       value v_idx, value v_val)
-{
-  CAMLparam4(v_array, v_pos, v_idx, v_val);
-  svm_node *array;
-  int pos;
-
-  array = Svm_node_array_val(v_array);
-  pos = Int_val(v_pos);
-
-  array[pos].index = Int_val(v_idx);
-  array[pos].value = Double_val(v_val);
-
-  CAMLreturn(Val_unit);
-}
-
-void finalize_node_matrix_gc(value v_mat)
-{
-  svm_node_matrix *mat = Svm_node_matrix_val(v_mat);
-  caml_stat_free(mat);
-}
-
-static inline value alloc_node_matrix(int size)
-{
-  svm_node_matrix *mat = Caml_stat_alloc(svm_node*,size);
-  value v_mat = caml_alloc_final(2, finalize_node_matrix_gc, 0, 1);
-  Svm_node_matrix_val(v_mat) = mat;
-  return v_mat;
-}
-
-CAMLprim value svm_node_matrix_create_stub(value v_size)
-{
-  CAMLparam1(v_size);
-  CAMLlocal1(v_mat);
-  v_mat = alloc_node_matrix(Int_val(v_size));
-  CAMLreturn(v_mat);
-}
-
-CAMLprim value svm_node_matrix_set_stub(value v_mat, value v_idx, value v_arr)
-{
-  CAMLparam3(v_mat, v_idx, v_arr);
-  svm_node_matrix *mat;
-
-  mat = Svm_node_matrix_val(v_mat);
-  mat[Int_val(v_idx)] = Svm_node_array_val(v_arr);
-
-  CAMLreturn(Val_unit);
-}
-
-void finalize_double_array_gc(value v_d)
-{
-  double *d = Double_array_val(v_d);
-  caml_stat_free(d);
-}
-
-static inline value alloc_double_array(double *d)
-{
-  value v_d = caml_alloc_final(2, finalize_double_array_gc, 1, 1000);
-  Double_array_val(v_d) = d;
-  return v_d;
-}
-
-CAMLprim value double_array_create_stub(value v_len)
-{
-  CAMLparam1(v_len);
-  double *d = Caml_stat_alloc(double,Int_val(v_len));
-  CAMLreturn(alloc_double_array(d));
-}
-
-CAMLprim value double_array_set_stub(value v_d, value v_idx, value v_val)
-{
-  CAMLparam3(v_d, v_idx, v_val);
-  Double_array_val(v_d)[Int_val(v_idx)] = Double_val(v_val);
-  CAMLreturn(Val_unit);
-}
-
-CAMLprim value double_array_get_stub(value v_d, value v_idx)
-{
-  CAMLparam2(v_d, v_idx);
-  double *d = Double_array_val(v_d);
-  CAMLreturn(d[Int_val(v_idx)]);
-}
-
 void finalize_problem_gc(value v_prob)
 {
   svm_prob *prob = Svm_problem_val(v_prob);
-  caml_stat_free(prob->x);
-  caml_stat_free(prob->y);
-}
-
-static inline value alloc_problem(svm_prob *prob)
-{
-  value v_prob = caml_alloc_final(2, finalize_problem_gc, 1, 100);
-  Svm_problem_val(v_prob) = prob;
-  return v_prob;
+  free(prob->x[0]);
+  free(prob->x);
+  free(prob->y);
 }
 
 CAMLprim value svm_problem_create_stub(value unit)
 {
   CAMLparam1(unit);
-  svm_prob *prob = Caml_stat_alloc(svm_prob,1);
-  CAMLreturn(alloc_problem(prob));
+  value v_prob = caml_alloc_final(1, finalize_problem_gc, 1, 100);
+  Svm_problem_val(v_prob) = Caml_stat_alloc(svm_prob,1);
+  CAMLreturn(v_prob);
 }
 
 CAMLprim value svm_problem_l_set_stub(value v_prob, value v_size)
@@ -210,14 +101,14 @@ CAMLprim value svm_problem_l_get_stub(value v_prob)
 CAMLprim value svm_problem_y_set_stub(value v_prob, value v_y)
 {
   CAMLparam2(v_prob, v_y);
-  svm_prob *prob;
-  int i;
+  svm_problem* prob = Svm_problem_val(v_prob);
+  assert(Caml_ba_array_val(v_y)->num_dims == 1);
+  assert(Caml_ba_array_val(v_y)->flags & CAML_BA_FLOAT64);
+  int m = Caml_ba_array_val(v_y)->dim[0];
+  double* data = (double*) Caml_ba_data_val(v_y);
 
-  prob = Svm_problem_val(v_prob);
-  prob->y = Caml_stat_alloc(double,prob->l); // NOTE: l must be initialized
-  for (i = 0; i < prob->l; i++)
-    prob->y[i] = Double_array_val(v_y)[i];
-
+  prob->y = (double*) malloc(sizeof(double) * m);
+  for (int i = 0; i < m; i++) prob->y[i] = data[i];
   CAMLreturn(Val_unit);
 }
 
@@ -229,10 +120,87 @@ CAMLprim value svm_problem_y_get_stub(value v_prob, value v_idx)
   CAMLreturn(caml_copy_double(prob->y[i]));
 }
 
-CAMLprim value svm_problem_x_set_stub(value v_prob, value v_x)
+/* not meant to be called from ocaml */
+svm_node** create_svm_nodes_of_bigarray(value v_x) {
+  int m = Caml_ba_array_val(v_x)->dim[0];
+  int n = Caml_ba_array_val(v_x)->dim[1];
+  double* data = (double*) Caml_ba_data_val(v_x);
+
+  svm_node** dst = (svm_node **) malloc(sizeof(svm_node*) * m);
+  svm_node* buf = (svm_node*) malloc(sizeof(svm_node) * m * (n + 1));
+  dst[0] = buf;
+  for(int i = 1; i < m; i++)
+    dst[i] = dst[i - 1] + n + 1;
+
+  int k = 0;
+  for(int j = 0; j < n; j++)
+    for(int i = 0; i < m; i++, k++) {
+      svm_node* n = dst[i] + j;
+      n->index = j;
+      n->value = data[k];
+    }
+  for(int i = 0; i < m; i++)
+    dst[i][n].index = -1;
+  return dst;
+}
+
+CAMLprim value svm_problem_x_dense_set_stub(value v_prob, value v_x)
 {
   CAMLparam2(v_prob, v_x);
-  Svm_problem_val(v_prob)->x = Svm_node_matrix_val(v_x);
+  svm_problem* prob = Svm_problem_val(v_prob);
+  assert(Caml_ba_array_val(v_x)->num_dims == 2);
+  assert(Caml_ba_array_val(v_x)->flags & CAML_BA_FLOAT64);
+
+  prob->x = create_svm_nodes_of_bigarray(v_x);
+  CAMLreturn(Val_unit);
+}
+
+/* not meant to be called from ocaml */
+void copy_sparse_feature_vector(value src, svm_node* dst) {
+  int j = 0;
+  for(value v = src;
+      v != Val_emptylist;
+      j++, v = Field(v, 1)) {
+    svm_node* n = dst + j;
+    value pair = Field(v, 0);
+    n->index = Int_val(Field(pair, 0));
+    n->value = Double_val(Field(pair, 1));
+  }
+  dst[j].index = -1;
+}
+
+int svm_list_length(value l) {
+  int c = 0;
+  for(value v = l; v != Val_emptylist; ) {
+    c++;
+    v = Field(v, 1);
+  }
+  return c;
+}
+
+CAMLprim value svm_problem_x_sparse_set_stub(value v_prob, value v_x)
+{
+  CAMLparam2(v_prob, v_x);
+  svm_problem* prob = Svm_problem_val(v_prob);
+
+  int m = Wosize_val(v_x);
+  int* nz = (int*) calloc(m, sizeof(int));
+  int nz_total = 0;
+  for(int i = 0; i < m; i++) {
+    int l = svm_list_length(Field(v_x, i));
+    nz[i] += l;
+    nz_total += l;
+  }
+  prob->x = (svm_node **) malloc(sizeof(svm_node*) * m);
+  svm_node* buf = (svm_node*) malloc(sizeof(svm_node) * (nz_total + m));
+  prob->x[0] = buf;
+  for(int i = 1; i < m; i++)
+    prob->x[i] = prob->x[i - 1] + nz[i-1] + 1;
+
+  for(int i = 0; i < m; i++)
+    copy_sparse_feature_vector(Field(v_x, i), prob->x[i]);
+
+  free(nz);
   CAMLreturn(Val_unit);
 }
 
@@ -241,12 +209,9 @@ CAMLprim value svm_problem_x_get_stub(value v_prob, value v_i, value v_j)
   CAMLparam3(v_prob, v_i, v_j);
   CAMLlocal1(v_result);
 
-  svm_node_matrix *x;
-  int i, j;
-
-  x = Svm_problem_val(v_prob)->x;
-  i = Int_val(v_i);
-  j = Int_val(v_j);
+  svm_node **x = Svm_problem_val(v_prob)->x ;
+  int i = Int_val(v_i),
+      j = Int_val(v_j);
 
   v_result = caml_alloc(2, 0);
   Store_field(v_result, 0, Val_int(x[i][j].index));
@@ -260,30 +225,69 @@ CAMLprim value svm_problem_width_stub(value v_prob, value v_i)
   CAMLparam2(v_prob, v_i);
   CAMLlocal1(v_result);
 
-  svm_node_matrix *x;
-  int i, j;
-
-  i = Int_val(v_i); j = 0;
-  x = Svm_problem_val(v_prob)->x;
+  svm_node **x = Svm_problem_val(v_prob)->x ;
+  int i = Int_val(v_i);
+  int j = 0;
   while (x[i][j++].index != -1);
 
   CAMLreturn(Val_int(j-1));
 }
 
+CAMLprim value svm_problem_scale(value v_prob, value v_lower, value v_upper) {
+  CAMLparam3(v_prob, v_lower, v_upper);
+  svm_node **x = Svm_problem_val(v_prob)->x;
+  int l = Svm_problem_val(v_prob)->l;
+  int min_index = INT_MAX;
+  int max_index = 0;
+  double lower = Double_val(v_lower);
+  double upper = Double_val(v_upper);
+
+  for(int i = 0; i < l; i++)
+    for(int j = 0; ; j++) {
+      int index = x[i][j].index;
+      if(index == -1) break;
+      min_index = min(min_index, index);
+      max_index = max(max_index, index);
+    }
+  assert(max_index >= 0);
+  double* feature_max = (double*) malloc(((size_t) max_index + 1) * sizeof(double));
+  double* feature_min = (double*) malloc(((size_t) max_index + 1) * sizeof(double));
+  for(int i = 0; i <= max_index; i++) {
+    feature_min[i] =   DBL_MAX;
+    feature_max[i] = - DBL_MAX;
+  }
+  for(int i = 0; i < l; i++)
+    for(int j = 0; ; j++) {
+      int index = x[i][j].index;
+      if(index == -1) break;
+      feature_min[index] = min(feature_min[index], x[i][j].value);
+      feature_max[index] = max(feature_max[index], x[i][j].value);
+    }
+  for(int i = 0; i < l; i++)
+    for(int j = 0; ; j++) {
+      int index = x[i][j].index;
+      if(index == -1) break;
+      x[i][j].value =
+	lower +
+	(upper - lower) * (x[i][j].value - feature_min[index])
+	/ (feature_max[index] - feature_min[index]);
+    }
+  free(feature_min);
+  free(feature_max);
+  CAMLreturn(Val_unit);
+}
+
 CAMLprim value svm_problem_print_stub(value v_prob)
 {
   CAMLparam1(v_prob);
-  svm_node_matrix *x;
-  double *y;
-  int i, j, l;
+  svm_problem* prob = Svm_problem_val(v_prob);
 
-  l = Svm_problem_val(v_prob)->l;
-  x = Svm_problem_val(v_prob)->x;
-  y = Svm_problem_val(v_prob)->y;
+  svm_node** x = prob->x;
+  double* y = prob->y;
+  int l = prob->l;
 
-  for (i = 0; i < l; i++)
-  {
-    j = 0;
+  for (int i = 0; i < l; i++) {
+    int j = 0;
     printf("%g ", y[i]);
 
     while (x[i][j].index != -1)
@@ -460,14 +464,6 @@ CAMLprim value svm_get_svm_type_stub(value v_model)
   CAMLreturn(v_type);
 }
 
-CAMLprim value svm_get_kernel_type_stub(value v_model)
-{
-  CAMLparam1(v_model);
-  CAMLlocal1(v_kernel);
-  v_kernel = Val_long(Svm_model_val(v_model)->param.kernel_type);
-  CAMLreturn(v_kernel);
-}
-
 CAMLprim value svm_get_nr_class_stub(value v_model)
 {
   CAMLparam1(v_model);
@@ -512,9 +508,17 @@ CAMLprim value svm_get_svr_probability_stub(value v_model)
   CAMLreturn(v_res);
 }
 
-CAMLprim value svm_predict_values_stub(value v_model, value v_array)
+/* not meant to be called from ocaml */
+svm_node* create_feature_vector_sparse(value v_l) {
+  int n = svm_list_length(v_l);
+  svm_node* dst = (svm_node*) malloc(sizeof(svm_node) * (n + 1));
+  copy_sparse_feature_vector(v_l, dst);
+  return dst;
+}
+
+CAMLprim value svm_predict_values_sparse(value v_model, value v_x)
 {
-  CAMLparam2(v_model, v_array);
+  CAMLparam2(v_model, v_x);
   CAMLlocal1(v_decvals);
 
   int nr_class, nr_decvals, i;
@@ -524,8 +528,8 @@ CAMLprim value svm_predict_values_stub(value v_model, value v_array)
   nr_decvals = (nr_class*(nr_class-1))/2;
   decvals = Caml_stat_alloc(double, nr_decvals);
 
-  svm_predict_values(Svm_model_val(v_model),
-                     Svm_node_array_val(v_array), decvals);
+  svm_node* x = create_feature_vector_sparse(v_x);
+  svm_predict_values(Svm_model_val(v_model), x, decvals);
 
   v_decvals = caml_alloc(nr_class * Double_wosize, Double_array_tag);
   for (i = 0; i < nr_class; i++)
@@ -533,18 +537,21 @@ CAMLprim value svm_predict_values_stub(value v_model, value v_array)
     Store_double_field(v_decvals, i, decvals[i]);
   }
 
+  free(x);
   caml_stat_free(decvals);
   CAMLreturn(v_decvals);
 }
 
-CAMLprim value svm_predict_stub(value v_model, value v_array)
+CAMLprim value svm_predict_sparse(value v_model, value v_list)
 {
-  CAMLparam2(v_model, v_array);
+  CAMLparam2(v_model, v_list);
   CAMLlocal1(v_label);
   double label;
 
-  label = svm_predict(Svm_model_val(v_model), Svm_node_array_val(v_array));
+  svm_node* x = create_feature_vector_sparse(v_list);
+  label = svm_predict(Svm_model_val(v_model), x);
   v_label = caml_copy_double(label);
+  free(x);
 
   CAMLreturn(v_label);
 }
@@ -557,9 +564,9 @@ CAMLprim value svm_check_probability_model_stub(value v_model)
   CAMLreturn(v_res);
 }
 
-CAMLprim value svm_predict_probability_stub(value v_model, value v_array)
+CAMLprim value svm_predict_probability_sparse(value v_model, value v_list)
 {
-  CAMLparam2(v_model, v_array);
+  CAMLparam2(v_model, v_list);
   CAMLlocal3(v_label, v_estimates, v_result);
 
   int nr_class, i;
@@ -568,9 +575,84 @@ CAMLprim value svm_predict_probability_stub(value v_model, value v_array)
   nr_class = svm_get_nr_class(Svm_model_val(v_model));
   estimates = Caml_stat_alloc(double, nr_class);
 
-  label = svm_predict_probability(Svm_model_val(v_model),
-                                  Svm_node_array_val(v_array),
-                                  estimates);
+  svm_node* x = create_feature_vector_sparse(v_list);
+  label = svm_predict_probability(Svm_model_val(v_model), x, estimates);
+  free(x);
+
+  v_result = caml_alloc(2, 0);
+  v_label = caml_copy_double(label);
+
+  v_estimates = caml_alloc(nr_class * Double_wosize, Double_array_tag);
+  for (i = 0; i < nr_class; i++)
+  {
+    Store_double_field(v_estimates, i, estimates[i]);
+  }
+
+  Store_field(v_result, 0, v_label);
+  Store_field(v_result, 1, v_estimates);
+
+  caml_stat_free(estimates);
+  CAMLreturn(v_result);
+}
+
+
+CAMLprim value svm_predict_dense(value v_model, value v_x)
+{
+  CAMLparam2(v_model, v_x);
+  CAMLlocal1(v_label);
+  double label;
+
+  svm_node** x = create_svm_nodes_of_bigarray(v_x);
+  label = svm_predict(Svm_model_val(v_model), x[0]);
+  v_label = caml_copy_double(label);
+  free(x[0]);
+  free(x);
+
+  CAMLreturn(v_label);
+}
+
+CAMLprim value svm_predict_values_dense(value v_model, value v_x)
+{
+  CAMLparam2(v_model, v_x);
+  CAMLlocal1(v_decvals);
+
+  int nr_class, nr_decvals, i;
+  double *decvals;
+
+  nr_class = svm_get_nr_class(Svm_model_val(v_model));
+  nr_decvals = (nr_class*(nr_class-1))/2;
+  decvals = Caml_stat_alloc(double, nr_decvals);
+
+  svm_node** x = create_svm_nodes_of_bigarray(v_x);
+  svm_predict_values(Svm_model_val(v_model), x[0], decvals);
+  free(x[0]);
+  free(x);
+
+  v_decvals = caml_alloc(nr_class * Double_wosize, Double_array_tag);
+  for (i = 0; i < nr_class; i++)
+  {
+    Store_double_field(v_decvals, i, decvals[i]);
+  }
+
+  caml_stat_free(decvals);
+  CAMLreturn(v_decvals);
+}
+
+CAMLprim value svm_predict_probability_dense(value v_model, value v_x)
+{
+  CAMLparam2(v_model, v_x);
+  CAMLlocal3(v_label, v_estimates, v_result);
+
+  int nr_class, i;
+  double label, *estimates;
+
+  nr_class = svm_get_nr_class(Svm_model_val(v_model));
+  estimates = Caml_stat_alloc(double, nr_class);
+
+  svm_node** x = create_svm_nodes_of_bigarray(v_x);
+  label = svm_predict_probability(Svm_model_val(v_model), x[0], estimates);
+  free(x[0]);
+  free(x);
 
   v_result = caml_alloc(2, 0);
   v_label = caml_copy_double(label);

@@ -1,5 +1,5 @@
 (executables
- (names svm_test svm_test2)
+ (names svm_test svm_test2 svm_test3)
  (libraries core_kernel libsvm))
 
 (alias

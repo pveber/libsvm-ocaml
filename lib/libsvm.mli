@@ -31,16 +31,22 @@ module Svm : sig
 
   (** {2 SVM problem and model} *)
 
+  val load_dataset :
+    string ->
+    (int * float) list array * vec
+
   module Problem : sig
     type t (** Type of a SVM problem (training set). *)
 
-    (** [create x y] constructs a problem from a feature matrix [x] and target
-        vector [y]. Each row of [x] is a feature vector of a training
-        instance. *)
-    val create : x:mat -> y:vec -> t
+    (** [create ~x ~y] constructs a problem from a sparse encoding [x]
+       of training vectors and a target vector [y]. *)
+    val create : x:(int * float) list array -> y:vec -> t
 
-    (** [create_k k y] constructs a problem from a matrix [k] and target vector
-        [y]. The matrix [k] has to be of the following form:
+    (** [create_dense ~x ~y] constructs a problem from a dense
+       encoding [x] of training vectors and a target vector [y]. This
+       is useful in particular in conjunction with the [`PRECOMPUTED]
+       type of kernel when invoking {!train}. In that case [x]
+       represents a kernel matrix of the following form:
 
         1 K(x1,x1) K(x1,x2) ... K(x1,xL)
 
@@ -50,9 +56,10 @@ module Svm : sig
 
         L K(xL,x1) K(xL,x2) ... K(xL,xL)
 
-        where L denotes the number of training instances and K(x,y) is the
-        precomputed kernel value of the two training instances x and y. *)
-    val create_k : k:mat -> y:vec -> t
+        where L denotes the number of training instances and K(x,y) is
+       the precomputed kernel value of the two training instances x
+       and y. *)
+    val create_dense : x:mat -> y:vec -> t
 
     (** [get_n_samples prob] @return the number of training samples. *)
     val get_n_samples : t -> int
@@ -78,14 +85,13 @@ module Svm : sig
         each column in the feature matrix. *)
     val min_max_feats : t -> [ `Min of vec ] * [ `Max of vec ]
 
-    (** [scale ?lower ?upper prob min_feats max_feats] @return a linearly
-        scaled problem where each feature (attribute) lies in the range
-        \[[lower],[upper]\]. The default range is \[-1,1\]. *)
+    (** [scale ?lower ?upper prob] scales in place [prob] such that
+       each feature (attribute) lies in the range
+       \[[lower],[upper]\]. The default range is \[-1,1\]. *)
     val scale :
       ?lower:float -> ?upper:float
       -> t
-      -> min_feats:vec -> max_feats:vec
-      -> t
+      -> unit
 
     (** [print prob] prints the internal representation of a problem.
         It is mainly used for debugging purposes. *)
@@ -206,25 +212,42 @@ module Svm : sig
 
   (** {2 SVM prediction} *)
 
+  (** [predict_sparse model ~x] does classification or regression on a
+     test vector [x] given a [model].  For a classification model, the
+     predicted class for [x] is returned.  For a regression model, the
+     function value of [x] is returned.  For a one-class model, +1 or
+     -1 is returned. *)
+  val predict_sparse : Model.t -> (int * float) list -> float
+
+  (** [predict_values_sparse model x] @return a matrix with decision values on a test
+      vector [x]. *)
+  val predict_values_sparse : Model.t -> (int * float) list -> float array array
+
+  (** [predict_probability m x] does classification or regression on a
+     test vector [x] based on a [model] with probability information.
+     @raise Invalid_argument if the model does not support probability
+     estimates. *)
+  val predict_probability_sparse : Model.t -> (int * float) list -> float * float array
+
   (** [predict_one model x] does classification or regression on a test vector
       [x] given a [model].
       For a classification model, the predicted class for [x] is returned.
       For a regression model, the function value of [x] is returned.
       For a one-class model, +1 or -1 is returned. *)
-  val predict_one : Model.t -> x:vec -> float
+  val predict_one : Model.t -> vec -> float
 
   (** [predict model x] applies predict_one to each row of the matrix [x]. *)
-  val predict : Model.t -> x:mat -> vec
+  val predict : Model.t -> mat -> vec
 
   (** [predict_values model x] @return a matrix with decision values on a test
       vector [x]. *)
-  val predict_values : Model.t -> x:vec -> float array array
+  val predict_values : Model.t -> vec -> float array array
 
   (** [predict_probability m x] does classification or regression on a test
       vector [x] based on a [model] with probability information.
       @raise Invalid_argument if the model does not support probability
       estimates. *)
-  val predict_probability : Model.t -> x:vec -> float * float array
+  val predict_probability : Model.t -> vec -> float * float array
 
   (** [predict_from_file model filename] does classification or regression
       on the testing data given in [filename].
