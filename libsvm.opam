@@ -29,6 +29,7 @@ in machine learning.
 """
 depends: [
   "base"
+  "core_kernel" {with-test}
   "dune" {>= "1.7"}
   "lacaml"
   "ocaml" {>= "4.03.0"}
